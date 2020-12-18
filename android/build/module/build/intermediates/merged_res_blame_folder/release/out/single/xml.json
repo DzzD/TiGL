@@ -1,0 +1,30 @@
+[
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\xml\\standalone_badge.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\43ad97bc6d24d90ae01127f7acab589a\\material-1.2.1\\res\\xml\\standalone_badge.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\xml\\standalone_badge_gravity_bottom_end.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\43ad97bc6d24d90ae01127f7acab589a\\material-1.2.1\\res\\xml\\standalone_badge_gravity_bottom_end.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\xml\\titanium_ui_vertical_nested_scrollview.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\b5bfc903c86b2c3c84589aaa76e20c35\\titanium-9.3.0\\res\\xml\\titanium_ui_vertical_nested_scrollview.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\xml\\titanium_ui_horizontal_nested_scrollview.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\b5bfc903c86b2c3c84589aaa76e20c35\\titanium-9.3.0\\res\\xml\\titanium_ui_horizontal_nested_scrollview.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\xml\\standalone_badge_gravity_bottom_start.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\43ad97bc6d24d90ae01127f7acab589a\\material-1.2.1\\res\\xml\\standalone_badge_gravity_bottom_start.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\xml\\standalone_badge_gravity_top_start.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\43ad97bc6d24d90ae01127f7acab589a\\material-1.2.1\\res\\xml\\standalone_badge_gravity_top_start.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\xml\\standalone_badge_offset.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\43ad97bc6d24d90ae01127f7acab589a\\material-1.2.1\\res\\xml\\standalone_badge_offset.xml"
+    }
+]

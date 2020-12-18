@@ -1,0 +1,14 @@
+[
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\drawable-ldpi-v4\\titanium_icon_checkmark.png",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\b5bfc903c86b2c3c84589aaa76e20c35\\titanium-9.3.0\\res\\drawable-ldpi-v4\\titanium_icon_checkmark.png"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\drawable-ldpi-v4\\titanium_icon_disclosure.png",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\b5bfc903c86b2c3c84589aaa76e20c35\\titanium-9.3.0\\res\\drawable-ldpi-v4\\titanium_icon_disclosure.png"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\drawable-ldpi-v4\\titanium_icon_more.png",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\b5bfc903c86b2c3c84589aaa76e20c35\\titanium-9.3.0\\res\\drawable-ldpi-v4\\titanium_icon_more.png"
+    }
+]

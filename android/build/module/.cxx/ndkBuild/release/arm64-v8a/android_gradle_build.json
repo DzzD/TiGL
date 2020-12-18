@@ -1,0 +1,41 @@
+{
+  "buildFiles": [
+    "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\src\\main\\jni\\Android.mk"
+  ],
+  "cleanCommands": [
+    "D:\\AndroidSDK\\ndk\\21.2.6472646\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\src\\main\\jni\\Android.mk APP_ABI\u003darm64-v8a NDK_ALL_ABIS\u003darm64-v8a NDK_DEBUG\u003d0 APP_PLATFORM\u003dandroid-19 NDK_OUT\u003dD:/Dev/Appcelerator/glsprite/android/build/module/build/intermediates/ndkBuild/release/obj NDK_LIBS_OUT\u003dD:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\ndkBuild\\release\\lib APP_CPPFLAGS+\u003d-std\u003dc++11 APP_STL:\u003dc++_shared --output-sync\u003dnone clean"
+  ],
+  "buildTargetsCommand": "D:\\AndroidSDK\\ndk\\21.2.6472646\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\src\\main\\jni\\Android.mk APP_ABI\u003darm64-v8a NDK_ALL_ABIS\u003darm64-v8a NDK_DEBUG\u003d0 APP_PLATFORM\u003dandroid-19 NDK_OUT\u003dD:/Dev/Appcelerator/glsprite/android/build/module/build/intermediates/ndkBuild/release/obj NDK_LIBS_OUT\u003dD:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\ndkBuild\\release\\lib APP_CPPFLAGS+\u003d-std\u003dc++11 APP_STL:\u003dc++_shared -j8 --output-sync\u003dnone {LIST_OF_TARGETS_TO_BUILD}",
+  "libraries": {
+    "fr.dzzd.glsprite-release-arm64-v8a": {
+      "buildCommand": "D:\\AndroidSDK\\ndk\\21.2.6472646\\ndk-build.cmd NDK_PROJECT_PATH\u003dnull APP_BUILD_SCRIPT\u003dD:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\src\\main\\jni\\Android.mk APP_ABI\u003darm64-v8a NDK_ALL_ABIS\u003darm64-v8a NDK_DEBUG\u003d0 APP_PLATFORM\u003dandroid-19 NDK_OUT\u003dD:/Dev/Appcelerator/glsprite/android/build/module/build/intermediates/ndkBuild/release/obj NDK_LIBS_OUT\u003dD:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\ndkBuild\\release\\lib APP_CPPFLAGS+\u003d-std\u003dc++11 APP_STL:\u003dc++_shared -j8 --output-sync\u003dnone D:/Dev/Appcelerator/glsprite/android/build/module/build/intermediates/ndkBuild/release/obj/local/arm64-v8a/libfr.dzzd.glsprite.so",
+      "toolchain": "toolchain-arm64-v8a",
+      "abi": "arm64-v8a",
+      "artifactName": "fr.dzzd.glsprite",
+      "files": [
+        {
+          "src": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\src\\main\\jni\\..\\..\\..\\build\\ti-generated\\jni\\TiModuleBootstrap.cpp",
+          "flags": "-target aarch64-none-linux-android21 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot D:/AndroidSDK/ndk/21.2.6472646/build//../toolchains/llvm/prebuilt/windows-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fpic -O2 -DNDEBUG -ID:/AndroidSDK/ndk/21.2.6472646/build//../sources/cxx-stl/llvm-libc++/include -ID:/AndroidSDK/ndk/21.2.6472646/build//../sources/cxx-stl/llvm-libc++/../llvm-libc++abi/include -ID:/Dev/Appcelerator/glsprite/android/build/module/src/main/jni -std\u003dc++11 -DANDROID -g \"-IC:\\\\ProgramData\\\\Titanium\\\\mobilesdk\\\\win32\\\\9.3.0.GA\\\\android/native/include\" -Wno-conversion-null -Wno-format-security -Wno-format -Wno-tautological-compare -Wno-unused-result -Wno-deprecated-register -nostdinc++ -Wno-error\u003dformat-security -fno-strict-aliasing"
+        },
+        {
+          "src": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\src\\main\\jni\\..\\..\\..\\build\\ti-generated\\jni\\fr.dzzd.glsprite.ExampleProxy.cpp",
+          "flags": "-target aarch64-none-linux-android21 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot D:/AndroidSDK/ndk/21.2.6472646/build//../toolchains/llvm/prebuilt/windows-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fpic -O2 -DNDEBUG -ID:/AndroidSDK/ndk/21.2.6472646/build//../sources/cxx-stl/llvm-libc++/include -ID:/AndroidSDK/ndk/21.2.6472646/build//../sources/cxx-stl/llvm-libc++/../llvm-libc++abi/include -ID:/Dev/Appcelerator/glsprite/android/build/module/src/main/jni -std\u003dc++11 -DANDROID -g \"-IC:\\\\ProgramData\\\\Titanium\\\\mobilesdk\\\\win32\\\\9.3.0.GA\\\\android/native/include\" -Wno-conversion-null -Wno-format-security -Wno-format -Wno-tautological-compare -Wno-unused-result -Wno-deprecated-register -nostdinc++ -Wno-error\u003dformat-security -fno-strict-aliasing"
+        },
+        {
+          "src": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\src\\main\\jni\\..\\..\\..\\build\\ti-generated\\jni\\fr.dzzd.glsprite.GlspriteModule.cpp",
+          "flags": "-target aarch64-none-linux-android21 -fdata-sections -ffunction-sections -fstack-protector-strong -funwind-tables -no-canonical-prefixes --sysroot D:/AndroidSDK/ndk/21.2.6472646/build//../toolchains/llvm/prebuilt/windows-x86_64/sysroot -g -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -D_FORTIFY_SOURCE\u003d2 -fno-exceptions -fno-rtti -fpic -O2 -DNDEBUG -ID:/AndroidSDK/ndk/21.2.6472646/build//../sources/cxx-stl/llvm-libc++/include -ID:/AndroidSDK/ndk/21.2.6472646/build//../sources/cxx-stl/llvm-libc++/../llvm-libc++abi/include -ID:/Dev/Appcelerator/glsprite/android/build/module/src/main/jni -std\u003dc++11 -DANDROID -g \"-IC:\\\\ProgramData\\\\Titanium\\\\mobilesdk\\\\win32\\\\9.3.0.GA\\\\android/native/include\" -Wno-conversion-null -Wno-format-security -Wno-format -Wno-tautological-compare -Wno-unused-result -Wno-deprecated-register -nostdinc++ -Wno-error\u003dformat-security -fno-strict-aliasing"
+        }
+      ],
+      "output": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\ndkBuild\\release\\obj\\local\\arm64-v8a\\libfr.dzzd.glsprite.so"
+    }
+  },
+  "toolchains": {
+    "toolchain-arm64-v8a": {
+      "cppCompilerExecutable": "D:\\AndroidSDK\\ndk\\21.2.6472646\\build\\..\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe"
+    }
+  },
+  "cFileExtensions": [],
+  "cppFileExtensions": [
+    "cpp"
+  ]
+}

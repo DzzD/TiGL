@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "applicationId": "fr.dzzd.glsprite",
+  "variantType": "LIBRARY",
+  "elements": [
+    {
+      "outputType": {
+        "type": "MERGED_MANIFESTS"
+      },
+      "apkData": {
+        "type": "MAIN",
+        "splits": [],
+        "versionCode": -1,
+        "versionName": "1.0.0",
+        "outputFile": "module-release.aar",
+        "fullName": "release",
+        "baseName": "release",
+        "dirName": ""
+      },
+      "path": "../../library_manifest/release/AndroidManifest.xml",
+      "properties": {
+        "packageId": "fr.dzzd.glsprite",
+        "split": ""
+      }
+    }
+  ]
+}

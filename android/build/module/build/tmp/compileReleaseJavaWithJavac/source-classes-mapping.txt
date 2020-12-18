@@ -1,0 +1,22 @@
+fr/dzzd/glsprite/TiModuleBootstrap.java
+ fr.dzzd.glsprite.TiModuleBootstrap
+fr/dzzd/glsprite/GLSurface.java
+ fr.dzzd.glsprite.GLSurface
+fr/dzzd/glsprite/GlspriteModule.java
+ fr.dzzd.glsprite.GlspriteModule
+fr/dzzd/glsprite/CommonJsSourceProvider.java
+ fr.dzzd.glsprite.CommonJsSourceProvider
+fr/dzzd/glsprite/ExampleProxy.java
+ fr.dzzd.glsprite.ExampleProxy
+fr/dzzd/glsprite/BitmapCache.java
+ fr.dzzd.glsprite.BitmapCache
+fr/dzzd/glsprite/BuildConfig.java
+ fr.dzzd.glsprite.BuildConfig
+fr/dzzd/glsprite/GLSpriteBitmap.java
+ fr.dzzd.glsprite.GLSpriteBitmap
+fr/dzzd/glsprite/GLRenderer.java
+ fr.dzzd.glsprite.GLRenderer
+fr/dzzd/glsprite/GLView.java
+ fr.dzzd.glsprite.GLView
+fr/dzzd/glsprite/GLSprite.java
+ fr.dzzd.glsprite.GLSprite

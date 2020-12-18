@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\anim-v21\\design_bottom_sheet_slide_out.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\15d0a1c80bd7a2b0d7a41ad0b9439232\\material-1.1.0\\res\\anim-v21\\design_bottom_sheet_slide_out.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\anim-v21\\design_bottom_sheet_slide_in.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\15d0a1c80bd7a2b0d7a41ad0b9439232\\material-1.1.0\\res\\anim-v21\\design_bottom_sheet_slide_in.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\anim-v21\\mtrl_bottom_sheet_slide_in.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\15d0a1c80bd7a2b0d7a41ad0b9439232\\material-1.1.0\\res\\anim-v21\\mtrl_bottom_sheet_slide_in.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\anim-v21\\mtrl_bottom_sheet_slide_out.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\15d0a1c80bd7a2b0d7a41ad0b9439232\\material-1.1.0\\res\\anim-v21\\mtrl_bottom_sheet_slide_out.xml"
+    },
+    {
+        "merged": "D:\\Dev\\Appcelerator\\glsprite\\android\\build\\module\\build\\intermediates\\res\\merged\\release\\anim-v21\\fragment_fast_out_extra_slow_in.xml",
+        "source": "C:\\Users\\dzzd\\.gradle\\caches\\transforms-2\\files-2.1\\07d85f4db3d20c304892a89d41fd8292\\fragment-1.2.5\\res\\anim-v21\\fragment_fast_out_extra_slow_in.xml"
+    }
+]
