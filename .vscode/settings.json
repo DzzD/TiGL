@@ -1,0 +1,27 @@
+{
+	"files.exclude": {
+		"android/build/": true,
+		".gitignore": true,
+		"build.bat": true,
+		"deployDevice.bat": true,
+		".vscode": true,
+		"dist/": true,
+	},
+	"search.exclude": {
+		"android/build/": true,
+		".gitignore": true,
+		"build.bat": true,
+		"deployDevice.bat": true,
+		".vscode": true,
+		"dist/": true,
+		
+	},
+	"files.watcherExclude": {
+		"android/build/": true,
+		".gitignore": true,
+		"build.bat": true,
+		"deployDevice.bat": true,
+		".vscode": true,
+		"dist/": true,
+	}
+}
