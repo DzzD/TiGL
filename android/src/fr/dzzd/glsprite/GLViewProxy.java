@@ -29,20 +29,22 @@ import org.appcelerator.titanium.view.TiUIView;
 import android.app.Activity;
 
 
-// This proxy can be created by calling Glsprite.createExample({message: "hello world"})
+// This proxy can be created by calling Glsprite.createGLView({message: "hello world"})
 @Kroll.proxy(creatableInModule=GlspriteModule.class)
-public class ExampleProxy extends TiViewProxy
+public class GLViewProxy extends TiViewProxy
 {
 	// Standard Debugging variables
 	private static final String LCAT = "ExampleProxy";
 	private static final boolean DBG = TiConfig.LOGD;
 
-	private GLView glView = null;
+    private KrollFunction onCreatedCallback = null;
+    private KrollFunction onChangedCallback = null;
     private KrollFunction onDrawCallback = null;
 
+	public GLView glView;
 
 	// Constructor
-	public ExampleProxy()
+	public GLViewProxy()
 	{
 		super();
 	}
@@ -50,11 +52,24 @@ public class ExampleProxy extends TiViewProxy
 	@Override
 	public TiUIView createView(Activity activity)
 	{
-		Log.i("GLSprite", "ExampleProxy.createView(activity)");
-		this.glView = new GLView(this);
-		this.glView.getLayoutParams().autoFillsHeight = true;
-		this.glView.getLayoutParams().autoFillsWidth = true;
-		return this.glView;
+		Log.i("GLSprite", "GLViewProxy.createView(activity)");
+		return new TView(this, activity);
+	}
+
+	public class TView extends TiUIView
+	{
+
+		public TView(GLViewProxy proxy, Activity activity)
+		{
+			super(proxy);
+			proxy.glView = new GLView();
+			this.setNativeView(proxy.glView.getGlSurface());
+			this.getLayoutParams().autoFillsHeight = true;
+			this.getLayoutParams().autoFillsWidth = true;
+
+			Log.i("GLSprite", "TView(TiViewProxy, GLView)");
+
+		}
 	}
 
 	// Handle creation options
@@ -63,20 +78,50 @@ public class ExampleProxy extends TiViewProxy
 	{
 		super.handleCreationDict(options);
 
-		Log.i("GLSprite", "ExampleProxy.handleCreationDict(KrollDict)");
+		Log.i("GLSprite", "GLViewProxy.handleCreationDict(KrollDict)");
 
 		if (options.containsKey("message")) 
 		{
-			Log.i("GLSprite", "ExampleProxy.handleCreationDict(KrollDict) => option.containsKey('message')");
+			Log.i("GLSprite", "GLViewProxy.handleCreationDict(KrollDict) => option.containsKey('message')");
+		}
+		
+		if (options.containsKey("oncreated")) 
+		{
+			this.setOncreated(options.get("oncreated"));
 		}
 
+		if (options.containsKey("onchanged")) 
+		{
+			this.setOnchanged(options.get("onchanged"));
+		}
+		
 		if (options.containsKey("ondraw")) 
 		{
 			this.setOndraw(options.get("ondraw"));
 		}
 	}
 
-	public void onDrawCallback()
+	public void onCreated()
+	{
+		if(this.onCreatedCallback != null)
+		{
+			HashMap<String, String> event = new HashMap<String, String>();
+    		this.onCreatedCallback.call(this.getKrollObject(), event);
+		}
+	}
+	
+	public void onChanged(int width, int height)
+	{
+		if(this.onChangedCallback != null)
+		{
+			HashMap<String, String> event = new HashMap<String, String>();
+			event.put("width", String.valueOf(width));
+			event.put("height", String.valueOf(height));
+    		this.onChangedCallback.call(this.getKrollObject(), event);
+		}
+	}
+
+	public void onDraw()
 	{
 		if(this.onDrawCallback != null)
 		{
@@ -84,15 +129,46 @@ public class ExampleProxy extends TiViewProxy
     		this.onDrawCallback.call(this.getKrollObject(), event);
 		}
 	}
+	
+	@Kroll.method
+	public Object createGLSprite(String filePath)
+	{
+		Log.i("GLSprite", "ExampleProxy.createGLSprite(" + filePath + ")");
+		return new GLSprite(filePath);
+	}
+	
+	@Kroll.method
+	public GLEntity getScene()
+	{
+		return this.glView.getGlRenderer().getScene();
+	}
+	
+
+	
+	@Kroll.setProperty @Kroll.method
+	public void setOncreated(Object callback)
+	{
+		Log.i("GLSprite", "ExampleProxy.setOncreated(callback)");
+		this.onCreatedCallback = (KrollFunction)callback;
+	}
+
+	
+	@Kroll.setProperty @Kroll.method
+	public void setOnchanged(Object callback)
+	{
+		Log.i("GLSprite", "ExampleProxy.setOnchanged(callback)");
+		this.onChangedCallback = (KrollFunction)callback;
+	}
 
 
-	// Methods
 	@Kroll.setProperty @Kroll.method
 	public void setOndraw(Object callback)
 	{
 		Log.i("GLSprite", "ExampleProxy.setOndraw(callback)");
 		this.onDrawCallback = (KrollFunction)callback;
 	}
+
+	
 
 
 	@Kroll.getProperty @Kroll.method

@@ -1,39 +1,50 @@
 package fr.dzzd.glsprite;
 
 
-import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollProxy;
-import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.kroll.common.Log;
 
+import org.appcelerator.kroll.annotations.Kroll;
+import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.view.TiUIView;
 
+import org.appcelerator.kroll.KrollProxy;
 
-public class GLView extends TiUIView
+
+
+import android.view.View;
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Canvas;
+
+public class GLView 
 {
     private GLSurface glSurface;
     private GLRenderer glRenderer;
 
-    public GLView(ExampleProxy proxy)
+    
+    public GLView()
     {
-        super(proxy);
+        super();
+        Log.i("GLSprite", "GLView()");
 
-        Log.i("GLSprite", "GLView(TiViewProxy)");
-
-        this.glSurface = new GLSurface(proxy.getActivity());
-        this.glRenderer = new GLRenderer(proxy);
+        this.glSurface = new GLSurface(TiApplication.getAppCurrentActivity());
+        this.glRenderer = new GLRenderer(this);
 		this.glSurface.setRenderer(this.glRenderer);
-		this.setNativeView(this.glSurface);
-
     }
 
-    @Override
-    public void processProperties(KrollDict d)
+    public void onCreated()
     {
-        super.processProperties(d);
+    }
 
-        Log.i("GLSprite", "GLView.processProperties(KrollDict)");
+    
+    public void onChanged(int width, int height)
+    {
+    }
+
+    
+    public void onDraw()
+    {
     }
 
     public GLRenderer getGlRenderer()

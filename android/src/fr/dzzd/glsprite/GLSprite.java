@@ -1,96 +1,214 @@
 package fr.dzzd.glsprite;
 
 
+import org.appcelerator.kroll.KrollFunction;
+import org.appcelerator.kroll.KrollObject;
+import org.appcelerator.kroll.KrollDict;
+import org.appcelerator.kroll.KrollProxy;
+
+import android.graphics.Bitmap;
+import java.util.HashMap;
+import org.appcelerator.kroll.common.Log;
 import android.graphics.Matrix;
-import java.util.*;
+import android.util.*;
+import java.nio.*;
 
-public class GLSprite
+
+public class GLSprite extends GLEntity
 {
-    public float x;
-    public float y;
+    private int textureHandle;
 
-    public float px;
-    public float py;
+    /*
+     * Sprite vertices & its Buffer
+     */
+    private float[] vertices = 
+	{        
+		 0f, 200f, 0f,        
+	 	 0f,   0f, 0f,           
+		200f,  0f, 0f,       
+		200f,200f, 0f
+	};
 
-    public float scaleX;
-    public float scaleY;
+    /*
+     * Texture UV coordinates & its Buffer
+     */
+    private float[] uvs=
+	{
+		    0f,  1f,
+            0f,  0f,
+            1f,  0f,
+            1f,  1f
+    };
 
-    public float rotate;
+    private FloatBuffer vertexBuffer;
+    private FloatBuffer uvsBuffer;
 
-    protected Vector<GLSprite> childs;
-    protected GLSprite parent;
+    private float width;
+    private float height;
 
-    
-    protected Matrix matrix;
-    protected float[] matrix3;
-    protected float[] matrix4x4;
+    private int textureWidth;
+    private int textureHeight;
 
-    public GLSprite()
-    {
-        this.x = 0;
-        this.y = 0;
-        this.px = 0;
-        this.py = 0;
-        this.scaleX = 1;
-        this.scaleY = 1;
-        this.rotate = 0;
-        this.parent= null;
-        this.childs = new Vector<GLSprite>();
-        this.matrix =  new Matrix();
-        this.matrix3 = new float[9];
-        this.matrix4x4 = new float[16];
+    private int spriteColCount;
+    private int spriteRowCount;
+
+   /*
+    * Construct a new SpriteBitmap using the specified image file
+    */
+    public GLSprite(String filePath)
+    {   
+        this(filePath, -1, -1);
     }
 
-    public GLSprite getParent()
+    /*
+    * Construct a new SpriteBitmap using the specified image file
+    */
+    public GLSprite(String filePath, int width, int height)
     {
-    	return this.parent;
-    }
+        super();
 
-    
-    public void updateMatrix(Matrix matrix)
-    {
-        this.matrix.reset();
-        this.matrix.postTranslate(-this.px, -this.py);
-        this.matrix.postScale(this.scaleX, this.scaleY);
-        this.matrix.postRotate(this.rotate * ((float)Math.PI)/180f);
-        this.matrix.postTranslate(this.px, this.py);
-        
-        this.matrix.postTranslate(this.x, this.y);
-        //this.matrix.set(matrix);
-        //this.matrix.preScale(this.scaleX, this.scaleY);
-        //this.matrix.preRotate(this.rotate * ((float)Math.PI)/180f);
-        //this.matrix.preTranslate(this.x, this.y);
-        //this.matrix.postScale(this.scaleX, this.scaleY);
-        //this.matrix.postTranslate(this.x, this.y);
-        this.matrix.postConcat(matrix);
+        Bitmap bitmap = null;
+        this.spriteColCount = 0;
+        this.spriteRowCount = 0;
 
-        this.matrix.getValues(this.matrix3);
-            for(int y=0;y<4;y++)
-                for(int x=0;x<4;x++)
-                    this.matrix4x4[x+y*4]=(x==y)?1:0;
-            
-        this.matrix4x4[0]=this.matrix3[0];
-        this.matrix4x4[1]=this.matrix3[1];
-        this.matrix4x4[4]=this.matrix3[3];
-        this.matrix4x4[5]=this.matrix3[4];
-        this.matrix4x4[3]=this.matrix3[2];
-        this.matrix4x4[7]=this.matrix3[5];
+        /*
+         * Initialze vertices nd uvs buffers 
+         */
+        this.vertexBuffer = ByteBuffer.allocateDirect(this.vertices.length * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        this.vertexBuffer.put(this.vertices).position(0); 
 
-        for (Enumeration<GLSprite> child = this.childs.elements(); child.hasMoreElements();)
+        this.uvsBuffer = ByteBuffer.allocateDirect(this.uvs.length * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        this.uvsBuffer.put(this.uvs).position(0);
+
+        try 
         {
-            ((GLSprite)child).updateMatrix(this.matrix);
+            bitmap = BitmapCache.load(filePath);
+
+            HashMap<String, Object> options = new HashMap<String, Object>();
+            options.put("uid",filePath);
+            options.put("bitmap",bitmap);
+            options.put("tile",false);
+            this.textureHandle = GLTextureCache.create(options);
+            
+            this.textureWidth = bitmap.getWidth();
+            this.textureHeight = bitmap.getHeight();
+
+            if(width == -1)
+            {
+                width = this.textureWidth;
+            }
+
+            if(height == -1)
+            {
+                height = this.textureHeight;
+            }
+
+            this.setSize(width, height);
+            this.spriteColCount = this.textureWidth / (int)this.width;
+            this.spriteRowCount = this.textureHeight / (int)this.height;
+            this.setFrame(0);
+
+            Log.i("GLSprite", "GLSprite()");
+            Log.i("GLSprite", "sprite width = " + width);
+            Log.i("GLSprite", "sprite height = " + height);
+            Log.i("GLSprite", "spriteColCount = " + this.spriteColCount);
+            Log.i("GLSprite", "spriteRowCount = " + this.spriteRowCount);
+        }
+        catch( Exception e)
+        {
+            Log.e("GLSprite", "Error - GLSpriteBitmap.load(Resources/appicon.png)" + e);
         }
 
+        
+
     }
 
+    public GLSprite setFrame(int spriteNum)
+    {
+        int frameCount = this.spriteColCount * this.spriteRowCount;
+        if(spriteNum < 0 )
+        {
+            spriteNum = (-spriteNum);
+        }
+        spriteNum %= frameCount;
+        
+        int spriteCol = spriteNum % this.spriteColCount;
+        int spriteRow = spriteNum / this.spriteColCount;
+
+        float left = (spriteCol * this.width) / this.textureWidth;
+        float top = (spriteRow * this.height) / this.textureHeight;
+
+        this.setUvs(left, top, this.width / this.textureWidth, this.height / this.textureHeight);
+
+        return this;
+    }
+
+    public GLSprite setSize(float width, float height)
+    {
+        this.width = width;
+        this.height = height;
+
+        this.vertexBuffer.clear();
+
+        //bottom left
+        this.vertexBuffer.put(0);
+        this.vertexBuffer.put(height);
+        this.vertexBuffer.put(0);
+        
+        //top left        
+        this.vertexBuffer.put(0);
+        this.vertexBuffer.put(0);
+        this.vertexBuffer.put(0);
+        
+        //top right 
+        this.vertexBuffer.put(width);
+        this.vertexBuffer.put(0);
+        this.vertexBuffer.put(0);
+        
+        //bottom right 
+        this.vertexBuffer.put(width);
+        this.vertexBuffer.put(height);
+        this.vertexBuffer.put(0);
+
+        this.vertexBuffer.position(0);
+
+        return this;
+    }
+
+    
+    public GLSprite setUvs(float left, float top, float width, float height)
+    {
+        this.vertexBuffer.clear();
+        
+
+        //bottom left
+        this.uvsBuffer.put(left);
+        this.uvsBuffer.put(top + height);
+        
+        //top left        
+        this.uvsBuffer.put(left);
+        this.uvsBuffer.put(top);
+        
+        //top right 
+        this.uvsBuffer.put(left + width);
+        this.uvsBuffer.put(top);
+        
+        //bottom right 
+        this.uvsBuffer.put(left + width);
+        this.uvsBuffer.put(top +height);
+
+        this.uvsBuffer.position(0);
+
+        return this;
+    }
+
+    @Override
     public void draw()
     {
-        for (Enumeration<GLSprite> child = this.childs.elements(); child.hasMoreElements();)
-        {
-            ((GLSprite)child).draw();
-        }
-
+        super.draw();
+        GLShader.drawTexture(this.matrix, this.vertexBuffer, this.uvsBuffer, this.textureHandle);
     }
 
+    
 
 }

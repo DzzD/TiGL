@@ -4,8 +4,8 @@ package fr.dzzd.glsprite;
 
 import java.util.HashMap;
 
-import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollObject;
+import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.kroll.common.Log;
 import android.opengl.GLSurfaceView;
@@ -24,71 +24,73 @@ import android.graphics.Bitmap;
 public class GLRenderer implements GLSurfaceView.Renderer 
 {
    
-    private ExampleProxy proxy = null;
+    private GLView glView = null;
 
     private int width;
     private int height;
 
+    private GLEntity scene;
 
+    private int n = 5;
 
-    private static Matrix matrix = new Matrix();
-    private static float[] matrix3 = new float[9];
-    private static float[] matrix4 = new float[16];
-
-    private static GLSpriteBitmap sprite;
-    private static GLSpriteBitmap sprite2;
-
-    public static int loadShader(int type, String shaderCode)
-	{    
-		int shader = GLES20.glCreateShader(type);  
-		GLES20.glShaderSource(shader, shaderCode);    
-		GLES20.glCompileShader(shader);    
-		return shader;
-	}
-
-
-
-    public GLRenderer(ExampleProxy proxy)
+    public GLRenderer(GLView glView)
     {
-        this.proxy = proxy;
+        this.glView = glView;
         this.width = -1;
         this.height = -1;
     }
 
-    public GLRenderer setWidth(int width)
+
+    public int getWidth()
     {
-        this.width = width;
-        return this;
+        return this.width;
     }
 
-    public GLRenderer setHeight(int height)
+    
+    public int getHeight()
     {
-        this.height = height;
-        return this;
+        return this.width;
     }
+
+
+    public GLEntity getScene()
+    {
+        return this.scene;
+    }
+
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) 
     {
         Log.i("GLSprite", "GLRenderer.onSurfaceCreated(GL10, EGLConfig)");
 
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc (GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-       
+        GLShader.initShaders();
+        
+        
+        this.scene= new GLEntity();
 
-        
-        sprite = new GLSpriteBitmap("Resources/appicon.png");
-        sprite2 = new GLSpriteBitmap("Resources/robot.png");
-        
+        /*
+         * Add some test sprites
+         * */
+        GLEntity sprite = new GLSprite("Resources/appicon.png");
+        this.scene.add(sprite);
+        GLSprite sprite2 = new GLSprite("Resources/robot.png");
+        sprite2.x = 200;
+        sprite2.y = 200;
+        this.scene.add(sprite2);
+
+        this.glView.onCreated();
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) 
     {
-        //GLES20.glViewport(0, 0, width, height);
-        this.setWidth(width);
-        this.setHeight(height);
         Log.i("GLSprite", "GLRenderer.onSurfaceChanged(" + width + "," + height + ")");
+
+        this.width = width;
+        this.height = height;
+
+        this.glView.onChanged(width, height);
     }
 
 
@@ -96,21 +98,20 @@ public class GLRenderer implements GLSurfaceView.Renderer
     @Override
     public void onDrawFrame(GL10 gl) 
     {
-        //sprite.rotate = 0.5f;
-        sprite.x = 150f;
-        sprite.y = 250f;
+        Matrix matrix = new Matrix();
         matrix.reset();
         matrix.postScale(2f/width,-2f/height);
         matrix.postTranslate(-1f, 1f);
-        sprite.updateMatrix(matrix);
+        this.scene.updateMatrix(matrix);
 
-        GLES20.glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        sprite.draw();
+        GLES20.glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
+        
+        this.scene.draw();
 
-        sprite.rotate =(float) ((SystemClock.uptimeMillis()));
-
-        this.proxy.onDrawCallback();
+        this.glView.onDraw();
         
     }
    
