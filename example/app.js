@@ -1,11 +1,17 @@
+//import Activity from "android.app.Activity";
+//import GLView from "fr.dzzd.glsprite.GLView";
+
+//var activity = new Activity(Titanium.App.Android.getTopActivity());
+
 /*
- * GLSprite module test
- */
+var glView = new GLView(activity);
+Ti.API.info("GLSprite", "glView is => " + glView);
+
+var glEntity = glView.getEntity();
+Ti.API.info("GLSprite", "glView.getEntity() glEntity is => " + glEntity);
+*/
 
 
-/*
- * Create window with label
- */
 var win = Ti.UI.createWindow({backgroundColor:'white'});
 var label = Ti.UI.createLabel();
 win.add(label);
@@ -16,41 +22,62 @@ win.open();
  */
 var glsprite = require('fr.dzzd.glsprite');
 Ti.API.info("GLSprite.test", "Module is => " + glsprite);
-label.text = glsprite.example();
 
-Ti.API.info("GLSprite.test","Module exampleProp is => " + glsprite.exampleProp);
-glsprite.exampleProp = "This is a test value";
 
-if (Ti.Platform.name == "android") 
+
+var n=0;
+var width = 0;
+var height = 0;
+var spriteCount = 100;
+
+function onCreated(e)
 {
-	var n=0;
-
-	function onDraw(event)
+	Ti.API.info("onCreated");
+	for(var n = 0; n < 100; n++ )
 	{
-		Ti.API.info("OnDrawCallback" + n++);
-		//Ti.API.info(event);
+		//var s = proxy.createGLSprite("Resources/appicon.png");
+		//s.x = n;
+		//s.y = n;
+		//proxy.getScene().add(s);
 	}
-	
-	var proxy = glsprite.createExample(
-		{/*
-			message: "Creating an example Proxy",
-			backgroundColor: "red",*/
-			width: Ti.UI.FILL,
-			height: Ti.UI.FILL,
-			top: 0,
-			left: 0,
-			ondraw: onDraw
-
-		});
-
-
-	proxy.printMessage("Hello world!");
-	proxy.message = "Hi world!.  It's me again.";
-	proxy.printMessage("Hello world!");
-	win.add(proxy);
-	
-	//proxy.setCallbacks({ondraw: function(){Ti.API.info("OnDrawCallback");}});
-		
-	//proxy.setOndraw( function(){Ti.API.info("OnDrawCallback" + n++);});
 }
+
+function onChanged(e)
+{
+	var width = e.width;
+	var height = e.height;
+	Ti.API.info("onChanged");
+	Ti.API.info("onChanged" + e);
+	Ti.API.info("onChanged size=(" + width + "," + height + ")");
+}
+
+function onDraw(e)
+{
+	//if(n<10)
+	//	Ti.API.info("OnDraw" + n++);
+	Ti.API.info("proxy.getScene() : " + proxy.getScene());
+	//Ti.API.info(event);
+}
+
+
+
+
+var proxy = glsprite.createGLView(
+	{/*
+		message: "Creating an example Proxy",
+		backgroundColor: "red",*/
+		width: Ti.UI.FILL,
+		height: Ti.UI.FILL,
+		top: 0,
+		left: 0,
+		oncreated: onCreated,
+		onchanged: onChanged,
+		ondraw: onDraw
+
+	});
+
+
+win.add(proxy);
+
+
 

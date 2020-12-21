@@ -3,3 +3,4 @@
 /deployDevice.bat
 /android/build
 /android/dist
+/android/.gradle

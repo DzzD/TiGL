@@ -1,27 +1,41 @@
 {
 	"files.exclude": {
-		"android/build/": true,
 		".gitignore": true,
+		".vscode": true,
+		"android/build.gradle": true,
+		"android/build/": true,
+		"android/dist": true,
+		"android/lib": true,
+		"android/plugins": true,
 		"build.bat": true,
 		"deployDevice.bat": true,
-		".vscode": true,
-		"dist/": true,
+		"**/.classpath": true,
+		"**/.project": true,
+		"**/.settings": true,
+		"**/.factorypath": true
 	},
 	"search.exclude": {
-		"android/build/": true,
 		".gitignore": true,
-		"build.bat": true,
-		"deployDevice.bat": true,
 		".vscode": true,
-		"dist/": true,
+		"android/build.gradle": true,
+		"android/build/": true,
+		"android/dist": true,
+		"android/lib": true,
+		"android/plugins": true,
+		"build.bat": true,
+		"deployDevice.bat": true
 		
 	},
 	"files.watcherExclude": {
-		"android/build/": true,
 		".gitignore": true,
-		"build.bat": true,
-		"deployDevice.bat": true,
 		".vscode": true,
-		"dist/": true,
-	}
+		"android/build.gradle": true,
+		"android/build/": true,
+		"android/dist": true,
+		"android/lib": true,
+		"android/plugins": true,
+		"build.bat": true,
+		"deployDevice.bat": true
+	},
+	"java.configuration.updateBuildConfiguration": "interactive"
 }
