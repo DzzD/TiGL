@@ -103,6 +103,14 @@ public class GLEntity
         return this.childs;
     }
 
+    /*
+     * Gets children at Nth pos
+     * */
+    public GLEntity getChildAt(int n)
+    {
+        return this.childs.elementAt(n);
+    }
+
     
     /*
      * Gets childrens 
