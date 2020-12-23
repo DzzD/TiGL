@@ -35,7 +35,7 @@ public class GLShader
         "varying vec2 textureUv;" +
         "void main()" +
         "{" +    
-        "   gl_FragColor = texture2D(u_Texture, textureUv)+vec4(0.1,0.1,0.1,0.1);" +   
+        "   gl_FragColor = texture2D(u_Texture, textureUv);" +   //+vec4(0.1,0.1,0.1,0.1);
         "}";
 
     
@@ -97,8 +97,10 @@ public class GLShader
         /*
          * Performs OpenGL drawing
          */
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
-        GLES20.glUseProgram(progTexture);
+        //GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
+        //GLES20.glUseProgram(progTexture);
+        setCurrentTexture(textureHandle);
+        setCurrentProgram(progTexture);
         GLES20.glEnableVertexAttribArray(progTextureVertices);
         GLES20.glVertexAttribPointer(progTextureVertices, 3, GLES20.GL_FLOAT, false,  3*Float.BYTES, vertices);
         GLES20.glEnableVertexAttribArray(progTextureUvs);
@@ -108,6 +110,29 @@ public class GLShader
         GLES20.glDisableVertexAttribArray(progTextureVertices);
         GLES20.glDisableVertexAttribArray(progTextureUvs);
 
+    }
+
+    static int currentProgramHandle = -1;
+    public static void setCurrentProgram(int handle)
+    {
+        if(handle == currentProgramHandle)
+        {
+            return;
+        }
+        GLES20.glUseProgram(handle);
+        currentProgramHandle = handle;
+    }
+
+    
+    static int currentTextureHandle = -1;
+    public static void setCurrentTexture(int handle)
+    {
+        if(handle == currentTextureHandle)
+        {
+            return;
+        }
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, handle);
+        currentTextureHandle = handle;
     }
 
 }

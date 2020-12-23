@@ -63,7 +63,7 @@ public class GLViewProxy extends TiViewProxy
 		{
 			super(proxy);
 			proxy.glView = new GLView();
-			this.setNativeView(proxy.glView.getGlSurface());
+			this.setNativeView(proxy.glView);
 			this.getLayoutParams().autoFillsHeight = true;
 			this.getLayoutParams().autoFillsWidth = true;
 

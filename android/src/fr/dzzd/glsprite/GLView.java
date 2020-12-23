@@ -16,21 +16,31 @@ import android.view.View;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.opengl.GLSurfaceView;
 
-public class GLView 
+public class GLView extends GLSurfaceView
 {
-    private GLSurface glSurface;
+    //private GLSurface glSurface;
     private GLRenderer glRenderer;
 
     
-    public GLView()
+    public GLView() 
     {
-        super();
+        super(TiApplication.getAppCurrentActivity());
         Log.i("GLSprite", "GLView()");
 
-        this.glSurface = new GLSurface(TiApplication.getAppCurrentActivity());
+        //this.glSurface = new GLSurface(TiApplication.getAppCurrentActivity());
+        
+        //this.glSurface.setRenderer(this.glRenderer);
+        //this.setRenderer(this.glRenderer);
+    }
+
+    public void start()
+    {
+        this.setEGLContextClientVersion(2);
         this.glRenderer = new GLRenderer(this);
-		this.glSurface.setRenderer(this.glRenderer);
+        this.setRenderer(this.glRenderer);
+
     }
 
     public void onCreated()
@@ -51,9 +61,10 @@ public class GLView
     {
         return this.glRenderer;
     }
-
+/*
     public GLSurface getGlSurface()
     {
         return this.glSurface;
     }
+    */
 }

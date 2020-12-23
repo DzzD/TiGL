@@ -44,6 +44,7 @@ public class GLTextureCache
 
     private static Integer createGLTexture(HashMap<String,Object> options)
     {
+        Log.i("GLSprite","TextureCache.createGLTexture()");
         int[] handlePtr = new int[1];
         GLES20.glGenTextures(1, handlePtr, 0);
         int handle = handlePtr[0];

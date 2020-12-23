@@ -19,5 +19,6 @@ public class GLSurface extends GLSurfaceView
 
         // Create an OpenGL ES 2.0 context
         this.setEGLContextClientVersion(2);
+        //this.setEGLContextClientVersion(1);
     }   
 }
