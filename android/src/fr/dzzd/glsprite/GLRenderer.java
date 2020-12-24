@@ -35,9 +35,9 @@ public class GLRenderer implements GLSurfaceView.Renderer
 
     private int n = 5;
     private int frameCount = 0;
-    private int oglTime = 0;
-    private int jsTime = 0;
-    private int matTime = 0;
+    private long oglTime = 0;
+    private long jsTime = 0;
+    private long matTime = 0;
 
     public GLRenderer(GLView glView)
     {

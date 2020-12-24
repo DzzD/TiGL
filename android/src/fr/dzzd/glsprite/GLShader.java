@@ -78,9 +78,15 @@ public class GLShader
 
     }
 
+    static long ta =0;
+    static long tb =0;
+    static long tc =0;
+    static long td =0;
+    static int callCount = 0;
     public final static void drawTexture(Matrix matrix, FloatBuffer vertices, FloatBuffer textureUvs, int textureHandle)
     {
         
+       // long t0 = System.nanoTime();
         /*
          * Convert Android Matrix to OpenGL matrix (array of floats)
          */
@@ -95,6 +101,10 @@ public class GLShader
         matrix4x4[3]=matrix3x3[2];
         matrix4x4[7]=matrix3x3[5];
 
+/*
+ * TODO draw all sprite at once using no matrix and precomputed x,y,z 
+ * */
+       // long t1 = System.nanoTime();
         /*
          * Performs OpenGL drawing
          */
@@ -107,9 +117,24 @@ public class GLShader
         GLES20.glEnableVertexAttribArray(progTextureUvs);
         GLES20.glVertexAttribPointer(progTextureUvs, 2, GLES20.GL_FLOAT, false, 2*Float.BYTES, textureUvs);
         GLES20.glUniformMatrix4fv(progTextureMatrix, 1, false, matrix4x4, 0);
+      //  long t2 = System.nanoTime();
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
         GLES20.glDisableVertexAttribArray(progTextureVertices);
         GLES20.glDisableVertexAttribArray(progTextureUvs);
+      //  long t3 = System.nanoTime();
+      //  ta += t1-t0;
+       // tb += t2-t1;
+       // tc += t3-t2;
+/*
+        if(callCount++ == 100000)
+        {
+
+            Log.i("GLSprite", "GLRenderer. TA : " + (ta/callCount)/100000 + "us");
+            Log.i("GLSprite", "GLRenderer. TB : " + (tb/callCount)/100000 + "us");
+            Log.i("GLSprite", "GLRenderer. TC : " + (tc/callCount)/100000 + "us");
+            callCount=0;
+
+        }*/
 
     }
 

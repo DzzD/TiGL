@@ -137,12 +137,13 @@ public class GLViewProxy extends TiViewProxy
 		return new GLSprite(filePath);
 	}
 	
+	/*
 	@Kroll.method
 	public GLEntity getScene()
 	{
-		return this.glView.getGlRenderer().getScene();
+		return this.glView.getScene();
 	}
-	
+	*/
 
 	
 	@Kroll.setProperty @Kroll.method
