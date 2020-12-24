@@ -14,8 +14,9 @@ public class GLTextureCache
     
     public static int create(HashMap<String,Object> options, boolean usecache)
     {
+        Log.i("GLSprite","TextureCache.create()");
         Integer handle = null;
-        String key = (String)options.get("uid");
+        String key = (String)options.get("textureUid");
 
         if(usecache)
 		{
@@ -36,10 +37,9 @@ public class GLTextureCache
 
     }
 
-    public static Integer create(HashMap<String,Object> options)
+    public static int create(HashMap<String,Object> options)
     {
-        Integer handle = create(options, true);
-         return handle.intValue();
+         return create(options, true);
     }
 
     private static Integer createGLTexture(HashMap<String,Object> options)
@@ -53,7 +53,7 @@ public class GLTextureCache
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
             
-        if((Boolean)options.get("tile"))
+        if((Boolean)options.get("textureTile"))
         {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
@@ -64,9 +64,9 @@ public class GLTextureCache
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
         }
 
-        if(options.get("bitmap") != null)
+        if(options.get("textureBitmap") != null)
         {
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, (Bitmap)options.get("bitmap"), 0);
+            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, (Bitmap)options.get("textureBitmap"), 0);
             GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
         }
         return new Integer(handle);

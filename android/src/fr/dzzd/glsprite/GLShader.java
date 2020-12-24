@@ -11,6 +11,7 @@ public class GLShader
 {
     /*
      * Helper matrices used to convert from Android matrix
+     *   USED INTERNALLY, MUST NOT BE MODIFIED DIRECTLY
      */
     private static float[] matrix4x4 = new float[16];
     private static float[] matrix3x3 = new float[16];

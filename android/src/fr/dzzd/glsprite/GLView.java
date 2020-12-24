@@ -27,8 +27,7 @@ public class GLView extends GLSurfaceView
     public GLView() 
     {
         super(TiApplication.getAppCurrentActivity());
-        Log.i("GLSprite", "GLView()");
-
+        Log.i("GLSprite", "GLView() Thread ==> " + Thread.currentThread());
         //this.glSurface = new GLSurface(TiApplication.getAppCurrentActivity());
         
         //this.glSurface.setRenderer(this.glRenderer);
@@ -37,6 +36,7 @@ public class GLView extends GLSurfaceView
 
     public void start()
     {
+        Log.i("GLSprite","start() Thread ==> " + Thread.currentThread());
         this.setEGLContextClientVersion(2);
         this.glRenderer = new GLRenderer(this);
         this.setRenderer(this.glRenderer);
@@ -45,6 +45,7 @@ public class GLView extends GLSurfaceView
 
     public void onCreated()
     {
+        Log.i("GLSprite","onCreated() Thread ==> " + Thread.currentThread());
     }
 
     

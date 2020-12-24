@@ -46,14 +46,6 @@ public class GLEntity
      */
     protected Matrix matrix;
 
-    /*
-     * Helper matrices to convert to OpenGL parameter
-     *
-     * USED INTERNALLY, MUST NOT BE MODIFIED DIRECTLY
-     *
-    */
-    private float[] matrix3x3;
-    protected float[] matrix4x4;
 
 
     /*
@@ -73,8 +65,6 @@ public class GLEntity
         this.parent= null;
         this.childs = new Vector<GLEntity>();
         this.matrix =  new Matrix();
-        this.matrix3x3 = new float[9];
-        this.matrix4x4 = new float[16];
     }
 
 

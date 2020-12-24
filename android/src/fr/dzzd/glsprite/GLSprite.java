@@ -53,6 +53,8 @@ public class GLSprite extends GLEntity
     private int spriteRowCount;
     private int frameCount;
 
+    public HashMap<String, Object> options;
+
    /*
     * Construct a new SpriteBitmap using the specified image file
     */
@@ -67,10 +69,14 @@ public class GLSprite extends GLEntity
     public GLSprite(String filePath, HashMap<String,String> options)
     {
         super();
-
-        Bitmap bitmap = null;
+        this.width = -1;
+        this.height = -1;
         this.spriteColCount = 0;
         this.spriteRowCount = 0;
+        this.textureHandle = -1;
+        this.textureWidth = -1;
+        this.textureHeight = -1;
+        this.options = new HashMap<String, Object>();
 
         /*
          * Initialze vertices nd uvs buffers 
@@ -83,63 +89,47 @@ public class GLSprite extends GLEntity
 
         try 
         {
-            bitmap = BitmapCache.load(filePath);
-
-            HashMap<String, Object> optionsBitmap = new HashMap<String, Object>();
-            optionsBitmap.put("uid",filePath);
-            optionsBitmap.put("bitmap",bitmap);
-            
-            optionsBitmap.put("tile",(Boolean.parseBoolean(options.get("tile"))));
-            this.textureHandle = GLTextureCache.create(optionsBitmap);
-            
+            Bitmap bitmap = BitmapCache.load(filePath);
+            this.options.put("textureUid",filePath);
+            this.options.put("textureBitmap",bitmap);
+            this.options.put("textureTile",(Boolean.parseBoolean(options.get("tile"))));
             this.textureWidth = bitmap.getWidth();
             this.textureHeight = bitmap.getHeight();
-
-
-            String oWidth = options.get("width");
-            if(oWidth == null)
-            {
-                this.width = this.textureWidth;
-            }
-            else
-            {
-                this.width = Integer.parseInt(oWidth);
-            }
-
-            String oHeight = options.get("height");
-            if(oHeight == null)
-            {
-                this.height = this.textureHeight;
-            }
-            else
-            {
-                this.height = Integer.parseInt(oHeight);
-            }
-
-            this.setSize(this.width, this.height);
-            this.spriteColCount = this.textureWidth / (int)this.width;
-            this.spriteRowCount = this.textureHeight / (int)this.height;
-            this.frameCount = this.spriteColCount * this.spriteRowCount;
-            if(this.frameCount == 0)
-            {
-                this.frameCount = 1;
-            }
-            this.setFrame(0);
-
-            //Log.i("GLSprite", "GLSprite()");
-            //Log.i("GLSprite", "sprite width = " + this.width);
-            //Log.i("GLSprite", "sprite height = " + this.height);
-            //Log.i("GLSprite", "spriteColCount = " + this.spriteColCount);
-            //Log.i("GLSprite", "spriteRowCount = " + this.spriteRowCount);
+            this.width = this.textureWidth;
+            this.height = this.textureHeight;
         }
         catch( Exception e)
         {
             Log.e("GLSprite", "Error : GLSprite::BitmapCache.load(" + filePath + ") =>" + e, e);
         }
 
-        
+        Object oWidth = options.get("width");
+        if(oWidth != null)
+        {
+            this.width = ((oWidth instanceof String) ? Integer.parseInt((String)oWidth) : (int)oWidth);
+        }
+
+        Object oHeight = options.get("height") ;
+        if(oHeight != null)
+        {
+            this.height = ((oHeight instanceof String) ? Integer.parseInt((String)oHeight) : (int)oHeight);
+        }
+
+        this.setSize(this.width, this.height);
+
+        this.spriteColCount = this.textureWidth / (int)this.width;
+        this.spriteRowCount = this.textureHeight / (int)this.height;
+        this.frameCount = this.spriteColCount * this.spriteRowCount;
+        if(this.frameCount == 0)
+        {
+            this.frameCount = 1;
+            this.spriteColCount = 1;
+            this.spriteRowCount = 1;
+        }
+        this.setFrame(0);
 
     }
+
 
     public GLSprite setFrame(int spriteNum)
     {
@@ -224,6 +214,10 @@ public class GLSprite extends GLEntity
     public void draw()
     {
         super.draw();
+        if(this.textureHandle == -1)
+        {
+            this.textureHandle = GLTextureCache.create(this.options);
+        }
         GLShader.drawTexture(this.matrix, this.vertexBuffer, this.uvsBuffer, this.textureHandle);
     }
 

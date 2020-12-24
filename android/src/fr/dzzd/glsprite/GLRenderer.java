@@ -9,8 +9,10 @@ import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.kroll.common.Log;
 import android.opengl.GLSurfaceView;
-import javax.microedition.khronos.opengles.GL10;
+import android.opengl.EGL14;
+import android.opengl.EGLContext;
 import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
@@ -62,12 +64,23 @@ public class GLRenderer implements GLSurfaceView.Renderer
         return this.scene;
     }
 
+    private boolean isCurrentContext()
+    {
+        if (EGL14.eglGetCurrentContext() == EGL14.EGL_NO_CONTEXT) {
+           return false;
+        }
+        return true;
+    }
+
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config)
     {
         Log.i("GLSprite", "GLRenderer.onSurfaceCreated(GL10, EGLConfig)");
-
+        if(!this.isCurrentContext())
+        {
+            Log.i("GLSprite", "NO CURRENT CONTEXT EGL");
+        }
         
         GLShader.initShaders();
         
@@ -92,6 +105,10 @@ public class GLRenderer implements GLSurfaceView.Renderer
     public void onSurfaceChanged(GL10 gl, int width, int height) 
     {
         Log.i("GLSprite", "GLRenderer.onSurfaceChanged(" + width + "," + height + ")");
+        if(!this.isCurrentContext())
+        {
+            Log.i("GLSprite", "NO CURRENT CONTEXT EGL");
+        }
 
         this.width = width;
         this.height = height;
@@ -104,6 +121,12 @@ public class GLRenderer implements GLSurfaceView.Renderer
     @Override
     public void onDrawFrame(GL10 gl) 
     {
+        
+        if(!this.isCurrentContext())
+        {
+            Log.i("GLSprite", "GLRenderer.onDrawFrame(gl)");
+            Log.i("GLSprite", "NO CURRENT CONTEXT EGL");
+        }
         long t0 = System.nanoTime();
 
         Matrix matrix = new Matrix();
