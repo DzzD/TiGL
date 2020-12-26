@@ -3,6 +3,7 @@ package fr.dzzd.glsprite;
 import org.appcelerator.kroll.common.Log;
 import android.opengl.GLES20;
 import android.graphics.Matrix;
+import java.lang.System;
 import android.util.*;
 import java.nio.*;
 
@@ -14,19 +15,31 @@ public class GLShader
      *   USED INTERNALLY, MUST NOT BE MODIFIED DIRECTLY
      */
     private static float[] matrix4x4 = new float[16];
-    private static float[] matrix3x3 = new float[16];
+    private static float[] matrix3x3 = new float[9];
 
     /*
      * Shader for basic texture drawing
      */
+    /*
     private final static String vShaderTexture =
         "uniform mat4 matrix;" +
-        "attribute vec4 vertices;" +
+        "attribute vec2 vertices;" +
         "attribute vec2 textureUvs;" +
         "varying vec2 textureUv;" +
         "void main()" +
         "{" +
-        "  gl_Position = vertices * matrix;" +
+        "  gl_Position = vec4(vertices,0.0,1.0)*matrix ;" +
+        "  textureUv = textureUvs;" +
+        "}";
+        */
+    
+        private final static String vShaderTexture =
+        "attribute vec2 vertices;" +
+        "attribute vec2 textureUvs;" +
+        "varying vec2 textureUv;" +
+        "void main()" +
+        "{" +
+        "  gl_Position = vec4(vertices,0.0,1.0);" +
         "  textureUv = textureUvs;" +
         "}";
 
@@ -70,7 +83,7 @@ public class GLShader
         /*
          * Gets pointers for basic texture drawing program parameters
          */
-        progTextureMatrix = GLES20.glGetUniformLocation(progTexture, "matrix");
+        //progTextureMatrix = GLES20.glGetUniformLocation(progTexture, "matrix");
         progTextureVertices = GLES20.glGetAttribLocation(progTexture, "vertices");
         progTextureUvs = GLES20.glGetAttribLocation(progTexture, "textureUvs");
 
@@ -83,83 +96,49 @@ public class GLShader
     static long tc =0;
     static long td =0;
     static int callCount = 0;
-    public final static void drawTexture(Matrix matrix, FloatBuffer vertices, FloatBuffer textureUvs, int textureHandle)
+    //static FloatBuffer verticesBuffer = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    //static FloatBuffer uvsBuffer = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+    //FloatBuffer vertices2;
+    //public final static void drawTexture(float[] vertices, FloatBuffer textureUvs, int textureHandle, int count, boolean triangleFan)
+    public final static void drawTexture(FloatBuffer vertices, FloatBuffer textureUvs, int textureHandle, int count, boolean triangleFan)
     {
         
-       // long t0 = System.nanoTime();
-        /*
-         * Convert Android Matrix to OpenGL matrix (array of floats)
-         */
-        matrix.getValues(matrix3x3);
-            for(int y=0;y<4;y++)
-                for(int x=0;x<4;x++)
-                    matrix4x4[x+y*4]=(x==y)?1:0;
-        matrix4x4[0]=matrix3x3[0];
-        matrix4x4[1]=matrix3x3[1];
-        matrix4x4[4]=matrix3x3[3];
-        matrix4x4[5]=matrix3x3[4];
-        matrix4x4[3]=matrix3x3[2];
-        matrix4x4[7]=matrix3x3[5];
+ /*
+verticesBuffer.clear();
+verticesBuffer.put(vertices);
+verticesBuffer.rewind();
+textureUvs.position(0);
+*/
 
-/*
- * TODO draw all sprite at once using no matrix and precomputed x,y,z 
- * */
-       // long t1 = System.nanoTime();
         /*
          * Performs OpenGL drawing
          */
-        //GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
-        //GLES20.glUseProgram(progTexture);
-        setCurrentTexture(textureHandle);
-        setCurrentProgram(progTexture);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
+        GLES20.glUseProgram(progTexture);
         GLES20.glEnableVertexAttribArray(progTextureVertices);
-        GLES20.glVertexAttribPointer(progTextureVertices, 3, GLES20.GL_FLOAT, false,  3*Float.BYTES, vertices);
+        GLES20.glVertexAttribPointer(progTextureVertices, 2, GLES20.GL_FLOAT, false,  2*Float.BYTES, vertices);
         GLES20.glEnableVertexAttribArray(progTextureUvs);
         GLES20.glVertexAttribPointer(progTextureUvs, 2, GLES20.GL_FLOAT, false, 2*Float.BYTES, textureUvs);
-        GLES20.glUniformMatrix4fv(progTextureMatrix, 1, false, matrix4x4, 0);
-      //  long t2 = System.nanoTime();
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
+     
+        
+      
+        if(triangleFan)
+        {
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4 * count); //Faster 10%
+        }
+        else
+        {
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6 * count);
+        }
         GLES20.glDisableVertexAttribArray(progTextureVertices);
         GLES20.glDisableVertexAttribArray(progTextureUvs);
-      //  long t3 = System.nanoTime();
-      //  ta += t1-t0;
-       // tb += t2-t1;
-       // tc += t3-t2;
-/*
-        if(callCount++ == 100000)
-        {
-
-            Log.i("GLSprite", "GLRenderer. TA : " + (ta/callCount)/100000 + "us");
-            Log.i("GLSprite", "GLRenderer. TB : " + (tb/callCount)/100000 + "us");
-            Log.i("GLSprite", "GLRenderer. TC : " + (tc/callCount)/100000 + "us");
-            callCount=0;
-
-        }*/
 
     }
 
-    static int currentProgramHandle = -1;
-    public static void setCurrentProgram(int handle)
-    {
-        if(handle == currentProgramHandle)
-        {
-            return;
-        }
-        GLES20.glUseProgram(handle);
-        currentProgramHandle = handle;
-    }
 
     
-    static int currentTextureHandle = -1;
-    public static void setCurrentTexture(int handle)
-    {
-        if(handle == currentTextureHandle)
-        {
-            return;
-        }
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, handle);
-        currentTextureHandle = handle;
-    }
+
 
 }
     

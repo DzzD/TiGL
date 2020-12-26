@@ -14,7 +14,7 @@ public class GLTextureCache
     
     public static int create(HashMap<String,Object> options, boolean usecache)
     {
-        Log.i("GLSprite","TextureCache.create()");
+        //Log.i("GLSprite","TextureCache.create()");
         Integer handle = null;
         String key = (String)options.get("textureUid");
 

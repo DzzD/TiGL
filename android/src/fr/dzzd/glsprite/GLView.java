@@ -20,7 +20,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
      * If any attribute is accessed from JavaScript this will make the whole system laggy
      * To avoid this, all attributes are set as private
      */
-    private GLEntity scene;
+    private GLScene scene;
 
     private int n = 5;
     private int frameCount = 0;
@@ -60,7 +60,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
         
     }
 
-    public GLEntity getScene()
+    public GLScene getScene()
     {
         return this.scene;
     }
@@ -79,7 +79,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
         }
         
         GLShader.initShaders();
-        this.scene= new GLEntity();
+        this.scene = new GLScene();
         this.onCreated();
         this.fpsTime = System.nanoTime();
     }
@@ -113,7 +113,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
         long t0 = System.nanoTime();
         
         /*
-         * Call GLView callback
+         * Call callback
          */
         this.onDraw();
 
@@ -128,7 +128,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-        GLES20.glClearColor(0.0f, 0.5f, 0.0f, 1.0f);
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         
         
         long t2 = System.nanoTime();
@@ -147,15 +147,15 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
 
         this.fpsFrameCount++;
 
-        if(frameCount == 1000)
+        if(frameCount == 100)
         {
-            Log.i("GLSprite", "GLRenderer. OGL time/image : " + (oglTime/frameCount)/1000 + "us");
-            Log.i("GLSprite", "GLRenderer.  JS time/image : " + (jsTime/frameCount)/1000 + "us");
-            Log.i("GLSprite", "GLRenderer. MAT time/image : " + (matTime/frameCount)/1000 + "us");
+            Log.i("GLSprite", "GLRenderer. OGL time/image : " + (oglTime/frameCount) / 1000 + "us");
+            Log.i("GLSprite", "GLRenderer.  JS time/image : " + (jsTime/frameCount) / 1000 + "us");
+            Log.i("GLSprite", "GLRenderer. MAT time/image : " + (matTime/frameCount) / 1000 + "us");
             frameCount = 0;
-            oglTime=0;
-            jsTime=0;
-            matTime=0;
+            oglTime = 0;
+            jsTime = 0;
+            matTime = 0;
 
             this.fps = 1000000000 * this.fpsFrameCount / (System.nanoTime() - this.fpsTime);
             this.fpsFrameCount = 0;

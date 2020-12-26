@@ -1,12 +1,19 @@
 package fr.dzzd.glsprite;
 
-import org.appcelerator.kroll.KrollDict;
 
 import android.graphics.Matrix;
 import java.util.*;
 
 public class GLEntity
 {
+    
+    /*
+     * Helper matrices used to convert from Android matrix
+     *   USED INTERNALLY, MUST NOT BE MODIFIED DIRECTLY
+     */
+    public float[] matrix4x4 = new float[16];
+    public float[] matrix3x3 = new float[16];
+
     /*
      * Position in parent space
      */
@@ -22,13 +29,13 @@ public class GLEntity
     /*
      * Scale factors (centered on the pivot)
      */
-    public float scaleX;
-    public float scaleY;
+    public float sx;
+    public float sy;
 
     /*
      * Rotation (centered on the pivot)
      */
-    public float rotate;
+    public float r;
 
     /*
      * Children list
@@ -47,6 +54,15 @@ public class GLEntity
     protected Matrix matrix;
 
 
+    protected boolean drawFlattenedEnabled = true;
+
+    
+    public int type;
+
+    public final static int GL_ENTITY = 0;
+    public final static int GL_SCENE = 1;
+    public final static int GL_SPRITE = 2;
+
 
     /*
      * Create a ne GLEntity
@@ -55,18 +71,28 @@ public class GLEntity
      */
     public GLEntity()
     {
+        this.type = GL_ENTITY;
         this.x = 0;
         this.y = 0;
         this.px = 0;
         this.py = 0;
-        this.scaleX = 1;
-        this.scaleY = 1;
-        this.rotate = 0;
+        this.sx = 1;
+        this.sy = 1;
+        this.r = 0;
         this.parent= null;
         this.childs = new Vector<GLEntity>();
         this.matrix =  new Matrix();
     }
 
+    
+    /*
+     * Return an unique identifier for this sprite material
+     *  could be a combinaison of texture, opacity, effects, etc...
+     * */
+    public int getMaterialUid()
+    {
+        return Integer.valueOf(-1); //No material
+    }
 
     /*
      * Return this GLEntity's parent
@@ -110,172 +136,10 @@ public class GLEntity
 	{
 		this.x = x;
 		this.y = y;
-	}
+    }
+    
 	
 
-    public void setChildProperties(int index, HashMap<String,String> properties)
-    {
-        this.getChildAt(index).setProperties(properties);
-    }
-     
-    
-    public void setChildsProperties(HashMap<String,HashMap<String,String>> childsProperties)
-    {
-        for(Map.Entry<String, HashMap<String,String>> entry : childsProperties.entrySet())
-        {
-            int index = Integer.parseInt(entry.getKey());
-            HashMap<String,String> properties = entry.getValue();
-            this.setChildProperties(index, properties);
-        }
-    }
-
-    public HashMap<String,String> getProperties()
-    {
-        HashMap<String,String> properties =new HashMap<String,String>();
-        properties.put("x",Float.toString(this.x));
-        properties.put("y",Float.toString(this.y));
-        properties.put("px",Float.toString(this.px));
-        properties.put("py",Float.toString(this.py));
-        properties.put("scaleX",Float.toString(this.scaleX));
-        properties.put("scaleY",Float.toString(this.scaleY));
-        properties.put("rotate",Float.toString(this.rotate));
-        return properties;
-
-    }
-	 
-    public HashMap<String,HashMap<String,String>> getChildsProperties()
-    {
-        HashMap<String,HashMap<String,String>> properties = new HashMap<String,HashMap<String,String>>();
-        GLEntity[] glEntities = this.getChildrensAsArray();
-        
-        for(int i = 0; i < glEntities.length; i++)
-        {
-            properties.put(Integer.toString(i), glEntities[i].getProperties());
-            //properties[i] = glEntities[i].getProperties();
-        }
-        return properties;
-    }
-
-
-    public void setProperties(HashMap<String,String> properties)
-    {
-        for(Map.Entry<String, String> entry : properties.entrySet()) 
-        {
-            String key = entry.getKey();
-            switch(key)
-            {
-                case "x" :
-                    this.x = Float.parseFloat(entry.getValue());
-                break;
-
-                case "y" :
-                    this.y = Float.parseFloat(entry.getValue());
-                break;
-
-                case "px" :
-                    this.px = Float.parseFloat(entry.getValue());
-                break;
-
-                case "py" :
-                    this.py = Float.parseFloat(entry.getValue());
-                break;
-
-                case "scaleX" :
-                    this.scaleX = Float.parseFloat(entry.getValue());
-                break;
-
-                case "scaleY" :
-                    this.scaleY = Float.parseFloat(entry.getValue());
-                break;
-
-                case "rotation" :
-                    this.rotate = Float.parseFloat(entry.getValue());
-                break;
-
-            }
-        }
-    }
-    
-
-    /*
-    public GLEntityProps getProperties()
-    {
-        GLEntityProps props = new GLEntityProps();
-        props.x = this.x;
-        props.y = this.y;
-        props.rotate = this.rotate;
-        return props;
-    }
-
-    public GLEntityProps[] getChildsProperties()
-    {
-        GLEntity[] glEntities= this.getChildrensAsArray();
-        GLEntityProps[] props = new GLEntityProps[glEntities.length];
-        for(int n = 0; n < glEntities.length; n++)
-        {
-            props[n] = glEntities[n].getProperties();
-        }
-        return props;
-    }
-
-    
-    public void setProperties(GLEntityProps props)
-    {
-        this.x = props.x;
-        this.y = props.y;
-        this.rotate = props.rotate;
-    }
-
-    
-    public void setChildProperties(GLEntityProps props[])
-    {
-        GLEntity[] glEntities= this.getChildrensAsArray();
-        for(int index = 0; index < glEntities.length; index++)
-        {
-            glEntities[index].setProperties(props[index]);
-        }
-    }
-    */
-	
-	/*
-	* Sets sprite position
-	*/
-	public void setChildPos(int index, float x, float y)
-	{
-		GLEntity glEntity = this.getChildAt(index);
-		glEntity.x = x;
-		glEntity.y = y;
-    }
-    
-    
-	/*
-	* Sets sprite position
-    */
-    
-	public void setChildsPos(float[] datas)
-	{
-        for(int n = 0; n < datas.length / 3; n++)
-        {
-            //int index = indexes[n];
-            GLEntity glEntity = this.getChildAt(n);
-            glEntity.x=datas[n*3];
-            glEntity.y=datas[n*3 + 1];
-            glEntity.rotate=datas[n*3 + 2];
-        }
-    }
-
-    
-	public void setChildsPosInt(int[] datas)
-	{
-        for(int n = 0; n < datas.length; n++)
-        {
-            //int index = indexes[n];
-            GLEntity glEntity = this.getChildAt(n);
-            glEntity.x=(((datas[n] >> 16) & 0xFFFF) - 32768 ) / 4f;
-            glEntity.y=((datas[n] & 0xFFFF) - 32768) / 4f;
-            //glEntity.rotate=datas[n*2 + 1];
-        }
-    }
 
     
 	public void updateBulkModeXY(int[] datas, boolean fullUpdate)
@@ -303,18 +167,8 @@ public class GLEntity
 
     
     
-	public void updateBulkModeXYRString(String datas)
+	public void updateBulkModeXYString(String datas)
 	{
-        /*
-        for(int n = 0; n < datas.length/2 ; n++)
-        {
-            int index = datas[n*2];
-            GLEntity glEntity = this.getChildAt(index);
-            glEntity.x=(((datas[n*2+1] >> 16) & 0xFFFF) - 32768 ) / 2f;
-            glEntity.y=((datas[n*2+1] & 0xFFFF) - 32768) / 2f;
-            //glEntity.rotate=datas[n*2 + 1];
-        }
-        */
     }
 
 
@@ -349,10 +203,12 @@ public class GLEntity
          */
         this.matrix.reset();
         this.matrix.postTranslate(-this.px, -this.py);
-        this.matrix.postScale(this.scaleX, this.scaleY);
-        this.matrix.postRotate(this.rotate);
+        this.matrix.postScale(this.sx, this.sy);
+        this.matrix.postRotate(this.r);
         this.matrix.postTranslate(this.px + this.x, this.py + this.y);
         this.matrix.postConcat(matrix);
+
+        
 
         /*
          * Compute all childrens matrix
@@ -364,6 +220,28 @@ public class GLEntity
 
     }
 
+    public void getFlattenedEntities(Vector<GLEntity> flattenedEntities)
+    {
+        flattenedEntities.add(this);
+        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        {
+            (child.nextElement()).getFlattenedEntities(flattenedEntities);
+        }
+    }
+
+    public int getChildrenCount()
+    {
+        int count = this.childs.size();
+        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        {
+            count+=(child.nextElement()).getChildrenCount();
+        }
+        return count;
+    }
+
+
+
+
     /*
      * Draw this GLEntity on the GLView.
      *
@@ -371,14 +249,66 @@ public class GLEntity
      *  GLES20 functions are available for drawing and can be called within this method. 
      *  Drawing must be done in object space as the transformation Matrix is already applied.
      */
-    public void draw()
+    /*
+    public void drawSingle()
     {
-        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        if(!this.drawFlattenedEnabled)
         {
-            (child.nextElement()).draw();
+            for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+            {
+                (child.nextElement()).draw();
+            }
+        }
+        else
+        {*/
+            /*
+             * Flatten this entity and all its children in a single Vector
+             */
+            // Vector<GLEntity> flattenedEntities = new Vector<GLEntity>();
+            // this.getFlattenedEntities(flattenedEntities);
+
+            /*
+             * Arrange entities in different layers depending on their materials
+             */
+           /* HashMap<Integer><Vector<GLEntity>> materialLayers=new HashMap<Integer><Vector<GLEntity>>();
+            for (Enumeration<GLEntity> entities = this.flattenedEntities.elements(); entities.hasMoreElements();)
+            {
+                GLEntity entity = entities.nextElement();
+                Vector<GLEntity> layer = materialLayers.get(entity.getMaterialUid());
+                if(!layer)
+                {
+                    layer = new Vector<GLEntity>();
+                    materialLayers.put(entity.getMaterialUid(),layer);
+                }
+                layer.put(entity);
+            }
         }
 
     }
+*/
+
+public void draw()
+{
+
+}
+
+
+
+public void prepareDrawing()
+{
+}
+
+
+    public void drawBatch(Vector<GLEntity> entities)
+    {
+
+    }
+
+    public void drawSingle()
+    {
+
+    }
+    
 
 
 }

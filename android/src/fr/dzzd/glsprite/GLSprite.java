@@ -1,37 +1,43 @@
 package fr.dzzd.glsprite;
 
 
-import org.appcelerator.kroll.KrollFunction;
-import org.appcelerator.kroll.KrollObject;
-import org.appcelerator.kroll.KrollDict;
-import org.appcelerator.kroll.KrollProxy;
-
 import android.graphics.Bitmap;
 import java.util.HashMap;
 import org.appcelerator.kroll.common.Log;
 import android.graphics.Matrix;
-import android.util.*;
+import java.util.*;
 import java.nio.*;
 
 
 public class GLSprite extends GLEntity
 {
-    private int textureHandle;
+    public int textureHandle;
 
     /*
-     * Sprite vertices & its Buffer
+     * Sprite vertices 
      */
-    private float[] vertices = 
+    public float[] vertices = 
 	{        
-		 0f, 200f, 0f,        
-	 	 0f,   0f, 0f,           
-		200f,  0f, 0f,       
-		200f,200f, 0f
-	};
+		 0f,    200f,        
+	 	 0f,    0f,          
+		200f,   0f,      
+		200f,   200f
+    };
 
+   
+    
     /*
-     * Texture UV coordinates & its Buffer
+     * Texture UV coordinates 
      */
+    
+    public float[] uvs=
+	{
+		    0f,  1f,
+            0f,  0f,
+            1f,  0f,
+            1f,  1f
+    };
+    /*
     private float[] uvs=
 	{
 		    0f,  1f,
@@ -39,9 +45,11 @@ public class GLSprite extends GLEntity
             1f,  0f,
             1f,  1f
     };
+    */
 
-    private FloatBuffer vertexBuffer;
-    private FloatBuffer uvsBuffer;
+     
+    public FloatBuffer vertexBuffer;
+    public FloatBuffer uvsBuffer;
 
     private float width;
     private float height;
@@ -69,6 +77,7 @@ public class GLSprite extends GLEntity
     public GLSprite(String filePath, HashMap<String,String> options)
     {
         super();
+        this.type = GL_SPRITE;
         this.width = -1;
         this.height = -1;
         this.spriteColCount = 0;
@@ -128,8 +137,17 @@ public class GLSprite extends GLEntity
         }
         this.setFrame(0);
 
+        
     }
 
+    /*
+     * Return an unique identifier for this sprite material
+     *  could be a combinaison of texture, opacity, effects, etc...
+     */
+    public int getMaterialUid()
+    {
+        return Integer.valueOf(this.textureHandle);
+    }
 
     public GLSprite setFrame(int spriteNum)
     {
@@ -161,23 +179,21 @@ public class GLSprite extends GLEntity
         //bottom left
         this.vertexBuffer.put(0);
         this.vertexBuffer.put(height);
-        this.vertexBuffer.put(0);
         
         //top left        
-        this.vertexBuffer.put(0);
         this.vertexBuffer.put(0);
         this.vertexBuffer.put(0);
         
         //top right 
         this.vertexBuffer.put(width);
         this.vertexBuffer.put(0);
-        this.vertexBuffer.put(0);
         
-        //bottom right 
+        //top right 
         this.vertexBuffer.put(width);
         this.vertexBuffer.put(height);
-        this.vertexBuffer.put(0);
 
+        this.vertexBuffer.position(0);
+        this.vertexBuffer.get(this.vertices);
         this.vertexBuffer.position(0);
 
         return this;
@@ -186,8 +202,7 @@ public class GLSprite extends GLEntity
     
     public GLSprite setUvs(float left, float top, float width, float height)
     {
-        this.vertexBuffer.clear();
-        
+        this.uvsBuffer.clear();
 
         //bottom left
         this.uvsBuffer.put(left);
@@ -201,26 +216,114 @@ public class GLSprite extends GLEntity
         this.uvsBuffer.put(left + width);
         this.uvsBuffer.put(top);
         
-        //bottom right 
+        //top right 
         this.uvsBuffer.put(left + width);
-        this.uvsBuffer.put(top +height);
-
+        this.uvsBuffer.put(top + height);
+        
+        this.uvsBuffer.position(0);
+        this.uvsBuffer.get(this.uvs);
         this.uvsBuffer.position(0);
 
         return this;
     }
 
+    /*
     @Override
-    public void draw()
+    public void drawSingle()
     {
-        super.draw();
+        if(!this.drawFlattenedEnabled)
+        {
+            if(this.textureHandle == -1)
+            {
+                this.textureHandle = GLTextureCache.create(this.options);
+            }
+            GLShader.drawTexture(this.matrix, this.vertexBuffer, this.uvsBuffer, this.textureHandle);
+            super.draw();
+        }
+    }
+    */
+    
+    
+    //private float[] tmpVertices = new float[this.vertices.length];
+    
+    @Override
+    public void prepareDrawing()
+    {
         if(this.textureHandle == -1)
         {
             this.textureHandle = GLTextureCache.create(this.options);
         }
-        GLShader.drawTexture(this.matrix, this.vertexBuffer, this.uvsBuffer, this.textureHandle);
     }
+    
 
+
+    static float[] verts= new float[2048 * 6 * 2];
+    static FloatBuffer uvsb = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    static FloatBuffer vbuff = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+    @Override
+    public void drawSingle()
+    {
+        this.matrix.mapPoints(verts, 0, this.vertices, 0, 4);
+        vbuff.clear();
+        vbuff.put(verts, 0, 4);
+        vbuff.rewind();
+        GLShader.drawTexture(vbuff, this.uvsBuffer, this.textureHandle, 1, true);
+    }
+    
+    @Override
+    public void drawBatch(Vector<GLEntity> entities)
+    {
+        //entities.elementAt(0).drawSingle();
+
+        uvsb.clear();
+        int count = 0;
+        for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
+        {
+            e.nextElement().drawSingle();
+/*
+            GLSprite sprite = (GLSprite)e.nextElement();
+            sprite.matrix.mapPoints(verts, count * 2 * 6, sprite.vertices, 0, 4);
+            verts[count * 2 * 6 + 8 ] = verts[count * 2 * 6 + 0 ];
+            verts[count * 2 * 6 + 9 ] = verts[count * 2 * 6 + 1 ];
+            verts[count * 2 * 6 + 10 ] = verts[count * 2 * 6 + 4 ];
+            verts[count * 2 * 6 + 11 ] = verts[count * 2 * 6 + 5 ];
+
+            sprite.uvsBuffer.position(0);
+            uvsb.put(sprite.uvsBuffer);
+            uvsb.put(sprite.uvs[0]);
+            uvsb.put(sprite.uvs[1]);
+            uvsb.put(sprite.uvs[4]);
+            uvsb.put(sprite.uvs[5]);
+
+
+            count++;
+            */
+        }
+        //uvsb.position(0);
+        //GLShader.drawTexture(verts, uvsb, this.textureHandle, count, false);
+
+
+        /*
+        FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(entities.size() * this.vertices.length * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        this.vertexBuffer.position(0); 
+        this.vertexBuffer.put()
+        */
+
+        /*
+        FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(entities.size() * 6 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        FloatBuffer uvsBuffer = ByteBuffer.allocateDirect(entities.size() * 6 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+
+        for (Vector<GLEntity> e = entities.elements(); e.hasMoreElements();)
+        {
+            Vector<GLEntity> entity = e.nextElement();
+            
+        }
+
+        
+        GLShader.drawTextureBatch(vertexBuffer, uvsBuffer, entities.size(), this.textureHandle);
+        */
+    }
     
 
 }
