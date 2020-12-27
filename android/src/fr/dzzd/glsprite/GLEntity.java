@@ -287,27 +287,25 @@ public class GLEntity
     }
 */
 
-public void draw()
-{
 
-}
-
-
-
-public void prepareDrawing()
-{
-}
-
-
-    public void drawBatch(Vector<GLEntity> entities)
+    public void prepareDrawing()
     {
-
     }
 
     public void drawSingle()
     {
 
     }
+
+    public void drawBatch(Vector<GLEntity> entities)
+    {
+        for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
+        {
+            e.nextElement().drawSingle();
+        }
+
+    }
+
     
 
 

@@ -96,21 +96,9 @@ public class GLShader
     static long tc =0;
     static long td =0;
     static int callCount = 0;
-    //static FloatBuffer verticesBuffer = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-    //static FloatBuffer uvsBuffer = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-
-    //FloatBuffer vertices2;
-    //public final static void drawTexture(float[] vertices, FloatBuffer textureUvs, int textureHandle, int count, boolean triangleFan)
+    
     public final static void drawTexture(FloatBuffer vertices, FloatBuffer textureUvs, int textureHandle, int count, boolean triangleFan)
     {
-        
- /*
-verticesBuffer.clear();
-verticesBuffer.put(vertices);
-verticesBuffer.rewind();
-textureUvs.position(0);
-*/
-
         /*
          * Performs OpenGL drawing
          */
@@ -120,8 +108,6 @@ textureUvs.position(0);
         GLES20.glVertexAttribPointer(progTextureVertices, 2, GLES20.GL_FLOAT, false,  2*Float.BYTES, vertices);
         GLES20.glEnableVertexAttribArray(progTextureUvs);
         GLES20.glVertexAttribPointer(progTextureUvs, 2, GLES20.GL_FLOAT, false, 2*Float.BYTES, textureUvs);
-     
-        
       
         if(triangleFan)
         {
@@ -135,6 +121,8 @@ textureUvs.position(0);
         GLES20.glDisableVertexAttribArray(progTextureUvs);
 
     }
+
+    
 
 
     

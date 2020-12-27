@@ -4,3 +4,7 @@
 /android/build
 /android/dist
 /android/.gradle
+/android/.project
+/android/.settings/org.eclipse.buildship.core.prefs
+/android/src/fr/dzzd/glsprite/GLEntityProps.java
+/buildAndDeployDevice.bat

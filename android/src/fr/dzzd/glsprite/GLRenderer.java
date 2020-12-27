@@ -31,7 +31,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
     private int width;
     private int height;
 
-    private GLEntity scene;
+    private GLScene scene;
 
     private int n = 5;
     private int frameCount = 0;
@@ -59,7 +59,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
     }
 
 
-    public GLEntity getScene()
+    public GLScene getScene()
     {
         return this.scene;
     }
@@ -85,7 +85,7 @@ public class GLRenderer implements GLSurfaceView.Renderer
         GLShader.initShaders();
         
         
-        this.scene= new GLEntity();
+        this.scene= new GLScene();
 
         /*
          * Add some test sprites

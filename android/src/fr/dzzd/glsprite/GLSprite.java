@@ -227,24 +227,6 @@ public class GLSprite extends GLEntity
         return this;
     }
 
-    /*
-    @Override
-    public void drawSingle()
-    {
-        if(!this.drawFlattenedEnabled)
-        {
-            if(this.textureHandle == -1)
-            {
-                this.textureHandle = GLTextureCache.create(this.options);
-            }
-            GLShader.drawTexture(this.matrix, this.vertexBuffer, this.uvsBuffer, this.textureHandle);
-            super.draw();
-        }
-    }
-    */
-    
-    
-    //private float[] tmpVertices = new float[this.vertices.length];
     
     @Override
     public void prepareDrawing()
@@ -256,17 +238,17 @@ public class GLSprite extends GLEntity
     }
     
 
-
-    static float[] verts= new float[2048 * 6 * 2];
-    static FloatBuffer uvsb = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-    static FloatBuffer vbuff = ByteBuffer.allocateDirect(65536*2*Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    static int tmpBufferCapacity = 1;
+    static float[] verts= new float[6 * 2 * tmpBufferCapacity];
+    static FloatBuffer uvsb = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    static FloatBuffer vbuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
     @Override
     public void drawSingle()
     {
         this.matrix.mapPoints(verts, 0, this.vertices, 0, 4);
         vbuff.clear();
-        vbuff.put(verts, 0, 4);
+        vbuff.put(verts, 0, 8);
         vbuff.rewind();
         GLShader.drawTexture(vbuff, this.uvsBuffer, this.textureHandle, 1, true);
     }
@@ -274,14 +256,20 @@ public class GLSprite extends GLEntity
     @Override
     public void drawBatch(Vector<GLEntity> entities)
     {
-        //entities.elementAt(0).drawSingle();
+        if(tmpBufferCapacity<entities.size())
+        {
+            tmpBufferCapacity = entities.size();
+            verts= new float[6 * 2 * tmpBufferCapacity];
+            uvsb = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            vbuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+        }
 
         uvsb.clear();
         int count = 0;
         for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
         {
-            e.nextElement().drawSingle();
-/*
+            
+
             GLSprite sprite = (GLSprite)e.nextElement();
             sprite.matrix.mapPoints(verts, count * 2 * 6, sprite.vertices, 0, 4);
             verts[count * 2 * 6 + 8 ] = verts[count * 2 * 6 + 0 ];
@@ -296,12 +284,20 @@ public class GLSprite extends GLEntity
             uvsb.put(sprite.uvs[4]);
             uvsb.put(sprite.uvs[5]);
 
-
+            
             count++;
-            */
+            
         }
-        //uvsb.position(0);
-        //GLShader.drawTexture(verts, uvsb, this.textureHandle, count, false);
+        if(vbuff.hasArray())
+        {
+            Log.i("GLSprite", "Backed array");
+        }
+
+        vbuff.clear();
+        vbuff.put(verts, 0, count * 12);
+        vbuff.rewind();
+        uvsb.position(0);
+        GLShader.drawTexture(vbuff, uvsb, this.textureHandle, count, false);
 
 
         /*

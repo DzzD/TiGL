@@ -77,7 +77,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
         {
             Log.i("GLSprite", "GLView - NO CURRENT CONTEXT EGL(onSurfaceCreated)");
         }
-        
+        this.setPreserveEGLContextOnPause(true);
         GLShader.initShaders();
         this.scene = new GLScene();
         this.onCreated();
@@ -149,6 +149,10 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
 
         if(frameCount == 100)
         {
+            this.fps = 1000000000 * this.fpsFrameCount / (System.nanoTime() - this.fpsTime);
+            this.fpsFrameCount = 0;
+            this.fpsTime = System.nanoTime();
+
             Log.i("GLSprite", "GLRenderer. OGL time/image : " + (oglTime/frameCount) / 1000 + "us");
             Log.i("GLSprite", "GLRenderer.  JS time/image : " + (jsTime/frameCount) / 1000 + "us");
             Log.i("GLSprite", "GLRenderer. MAT time/image : " + (matTime/frameCount) / 1000 + "us");
@@ -157,9 +161,6 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer
             jsTime = 0;
             matTime = 0;
 
-            this.fps = 1000000000 * this.fpsFrameCount / (System.nanoTime() - this.fpsTime);
-            this.fpsFrameCount = 0;
-            this.fpsTime = System.nanoTime();
         }
 
         
