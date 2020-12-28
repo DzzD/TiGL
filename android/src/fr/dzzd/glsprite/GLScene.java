@@ -13,7 +13,7 @@ public class GLScene extends GLEntity
 
     public GLScene()
     {
-        super();
+        super(new HashMap<String,Object>());
         this.type = GL_SCENE;
         this.batchRenderingMode = true;
         this.flattenedEntities = new Vector<GLEntity>();

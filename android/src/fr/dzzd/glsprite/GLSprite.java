@@ -37,16 +37,7 @@ public class GLSprite extends GLEntity
             1f,  0f,
             1f,  1f
     };
-    /*
-    private float[] uvs=
-	{
-		    0f,  1f,
-            0f,  0f,
-            1f,  0f,
-            1f,  1f
-    };
-    */
-
+    
      
     public FloatBuffer vertexBuffer;
     public FloatBuffer uvsBuffer;
@@ -63,23 +54,16 @@ public class GLSprite extends GLEntity
 
     public HashMap<String, Object> options;
 
-   /*
-    * Construct a new SpriteBitmap using the specified image file
-    */
-    public GLSprite(String filePath)
-    {   
-        this(filePath, new HashMap<String,String>());
-    }
-
+  
     /*
     * Construct a new SpriteBitmap using the specified image file
     */
-    public GLSprite(String filePath, HashMap<String,String> options)
+    public GLSprite(HashMap<String,Object> options)
     {
-        super();
+        super(options);
         this.type = GL_SPRITE;
-        this.width = -1;
-        this.height = -1;
+        this.width = options.get("width") != null ? (int)options.get("width") : 0;
+        this.height = options.get("height") != null ? (int)options.get("height") : 0;
         this.spriteColCount = 0;
         this.spriteRowCount = 0;
         this.textureHandle = -1;
@@ -88,7 +72,7 @@ public class GLSprite extends GLEntity
         this.options = new HashMap<String, Object>();
 
         /*
-         * Initialze vertices nd uvs buffers 
+         * Initialze vertices and uvs buffers 
          */
         this.vertexBuffer = ByteBuffer.allocateDirect(this.vertices.length * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
         this.vertexBuffer.put(this.vertices).position(0); 
@@ -98,30 +82,28 @@ public class GLSprite extends GLEntity
 
         try 
         {
-            Bitmap bitmap = BitmapCache.load(filePath);
-            this.options.put("textureUid",filePath);
+            String url = (String)options.get("url");
+            Bitmap bitmap = BitmapCache.load(url);
+            this.options.put("textureUid",url);
             this.options.put("textureBitmap",bitmap);
-            this.options.put("textureTile",(Boolean.parseBoolean(options.get("tile"))));
+            this.options.put("textureTile",options.get("tile"));
             this.textureWidth = bitmap.getWidth();
             this.textureHeight = bitmap.getHeight();
-            this.width = this.textureWidth;
-            this.height = this.textureHeight;
         }
         catch( Exception e)
         {
-            Log.e("GLSprite", "Error : GLSprite::BitmapCache.load(" + filePath + ") =>" + e, e);
+            Log.e("TIGL", "GLSprite: BitmapCache.load(" + options.get("url") + ") : " + e, e);
         }
 
-        Object oWidth = options.get("width");
-        if(oWidth != null)
+       
+        if(this.width == 0)
         {
-            this.width = ((oWidth instanceof String) ? Integer.parseInt((String)oWidth) : (int)oWidth);
+            this.width = this.textureWidth;
         }
 
-        Object oHeight = options.get("height") ;
-        if(oHeight != null)
+        if(this.height == 0)
         {
-            this.height = ((oHeight instanceof String) ? Integer.parseInt((String)oHeight) : (int)oHeight);
+            this.height = this.textureHeight;
         }
 
         this.setSize(this.width, this.height);
@@ -129,7 +111,7 @@ public class GLSprite extends GLEntity
         this.spriteColCount = this.textureWidth / (int)this.width;
         this.spriteRowCount = this.textureHeight / (int)this.height;
         this.frameCount = this.spriteColCount * this.spriteRowCount;
-        if(this.frameCount == 0)
+        if(this.frameCount <= 0)
         {
             this.frameCount = 1;
             this.spriteColCount = 1;
@@ -143,7 +125,9 @@ public class GLSprite extends GLEntity
     /*
      * Return an unique identifier for this sprite material
      *  could be a combinaison of texture, opacity, effects, etc...
+     * This identifier is used to know wich entities/sprite can be draw together
      */
+    @Override
     public int getMaterialUid()
     {
         return Integer.valueOf(this.textureHandle);

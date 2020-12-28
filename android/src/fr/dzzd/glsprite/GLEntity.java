@@ -2,11 +2,30 @@ package fr.dzzd.glsprite;
 
 
 import android.graphics.Matrix;
+import org.appcelerator.kroll.common.Log;
 import java.util.*;
+import org.appcelerator.kroll.KrollDict;
 
 public class GLEntity
 {
+    private static int idGenerator = 1;
+
     
+
+    public final static int GL_ENTITY = 0;
+    public final static int GL_SCENE = 1;
+    public final static int GL_SPRITE = 2;
+    
+    /*
+     * Unique identifier for this entity
+     */
+    public int id;
+
+    /*
+     * An integer that identify the underlying implementation
+     */
+    public int type;
+
     /*
      * Helper matrices used to convert from Android matrix
      *   USED INTERNALLY, MUST NOT BE MODIFIED DIRECTLY
@@ -49,46 +68,55 @@ public class GLEntity
 
     /*
      * Transformation Matrix for this GLEntity.
-     * This matrix is updated by "updateMatrix(Matrix)" and used to retrieve position in world coordinate aswell as for drawing.
+     * This matrix is updated by "updateMatrix(Matrix)" and used to retrieve position in world coordinate 
+     * It is also used to transform vertices when drawing on screen.
      */
     protected Matrix matrix;
 
 
-    protected boolean drawFlattenedEnabled = true;
-
     
-    public int type;
 
-    public final static int GL_ENTITY = 0;
-    public final static int GL_SCENE = 1;
-    public final static int GL_SPRITE = 2;
-
+    public static int getNewUid()
+    {
+        return GLEntity.idGenerator++;
+    }
 
     /*
      * Create a ne GLEntity
      *
      * GLEntity represent an object in the hierarchy of the GLScene.
      */
-    public GLEntity()
+    public GLEntity(HashMap<String,Object> options)
     {
+        this.id = GLEntity.getNewUid();
         this.type = GL_ENTITY;
-        this.x = 0;
-        this.y = 0;
-        this.px = 0;
-        this.py = 0;
-        this.sx = 1;
-        this.sy = 1;
-        this.r = 0;
+        this.x = options.get("x") != null ? (float)options.get("x") : 0;
+        this.y = options.get("y") != null ? (float)options.get("y") : 0;
+        this.r = options.get("r") != null ? (float)options.get("r") : 0;
+        this.px = options.get("py") != null ? (float)options.get("px") : 0;
+        this.py = options.get("px") != null ? (float)options.get("py") : 0;
+        this.sx = options.get("sx") != null ? (float)options.get("sx") : 1;
+        this.sy = options.get("sy") != null ? (float)options.get("sy") : 1;
         this.parent= null;
         this.childs = new Vector<GLEntity>();
         this.matrix =  new Matrix();
+/*
+        Log.i("TIGL", "GLEntity: x :" + this.x);
+        Log.i("TIGL", "GLEntity: y :" + this.y);
+        Log.i("TIGL", "GLEntity: r :" + this.r);
+        Log.i("TIGL", "GLEntity: px :" + this.px);
+        Log.i("TIGL", "GLEntity: py :" + this.py);
+        Log.i("TIGL", "GLEntity: sx :" + this.sx);
+        Log.i("TIGL", "GLEntity: sy :" + this.sy);
+        */
     }
 
     
     /*
      * Return an unique identifier for this sprite material
      *  could be a combinaison of texture, opacity, effects, etc...
-     * */
+     * This identifier is used to know wich entities/sprite can be draw together
+     */
     public int getMaterialUid()
     {
         return Integer.valueOf(-1); //No material
@@ -218,6 +246,21 @@ public class GLEntity
             (child.nextElement()).updateMatrix(this.matrix);
         }
 
+    }
+
+    public void getProperties(Vector<KrollDict> v)
+    {
+        KrollDict props = new KrollDict();
+        props.put("x",x);
+        props.put("y",y);
+        props.put("r",r);
+        props.put("x",x);
+        v.add(props);
+
+        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        {
+            (child.nextElement()).getProperties(v);
+        }
     }
 
     public void getFlattenedEntities(Vector<GLEntity> flattenedEntities)

@@ -52,8 +52,17 @@ public class GLTextureCache
 
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-            
-        if((Boolean)options.get("textureTile"))
+           
+        boolean tile = false;
+        if(options.get("textureTile") != null)
+        {
+            if(((Boolean)options.get("textureTile")) == true)
+            {
+                tile = true; 
+            }
+        }
+
+        if(tile)
         {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
