@@ -121,17 +121,40 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     @Override
     public void onDrawFrame(GL10 gl) 
     {
-        if(!this.isCurrentContext())
+<<<<<<< HEAD
+=======
+    //     if(true)
+    //         return;
+        /*
+        if(this.paused)
         {
-            Log.i("TIGL", "GLView - NO CURRENT CONTEXT EGL(onDrawFrame)");
+            return;
+        }*/
+
         }
 
+<<<<<<< HEAD
+=======
+/*
+        if(!this.isShown())
+        {
+            Log.i("IIGL", "GLView - View not visible pausing thread");
+            this.onPause();
+        }
+*/
+        
+
+>>>>>>> e7a7463270fb035acd56e035a2ebcdb2fc21a784
         long t0 = System.nanoTime();
         
         /*
          * Call callback
          */
+<<<<<<< HEAD
         this.glViewListener.onLoop();
+=======
+        this.glViewListener.onDraw();
+>>>>>>> e7a7463270fb035acd56e035a2ebcdb2fc21a784
 
         long t1 = System.nanoTime();
 
@@ -140,12 +163,24 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         matrix.postScale(2f/width,-2f/height);
         matrix.postTranslate(-1f, 1f);
         this.scene.updateMatrix(matrix);
+<<<<<<< HEAD
+=======
+        long t2 = System.nanoTime();
+
+        GLES20.glEnable(GLES20.GL_BLEND);
+        GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+>>>>>>> e7a7463270fb035acd56e035a2ebcdb2fc21a784
         
 
         
+<<<<<<< HEAD
         //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         long t2 = System.nanoTime();
         
+=======
+>>>>>>> e7a7463270fb035acd56e035a2ebcdb2fc21a784
         
         /*
          * Draw OpenGL scene
