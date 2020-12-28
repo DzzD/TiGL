@@ -68,13 +68,13 @@ public class GLSprite extends GLEntity
     */
     public GLSprite(String filePath)
     {   
-        this(filePath, new HashMap<String,String>());
+        this(filePath, new HashMap<String,Object>());
     }
 
     /*
     * Construct a new SpriteBitmap using the specified image file
     */
-    public GLSprite(String filePath, HashMap<String,String> options)
+    public GLSprite(String filePath, HashMap<String,Object> options)
     {
         super();
         this.type = GL_SPRITE;
@@ -101,7 +101,7 @@ public class GLSprite extends GLEntity
             Bitmap bitmap = BitmapCache.load(filePath);
             this.options.put("textureUid",filePath);
             this.options.put("textureBitmap",bitmap);
-            this.options.put("textureTile",(Boolean.parseBoolean(options.get("tile"))));
+            this.options.put("textureTile",options.get("tile"));
             this.textureWidth = bitmap.getWidth();
             this.textureHeight = bitmap.getHeight();
             this.width = this.textureWidth;

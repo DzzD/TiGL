@@ -3,6 +3,7 @@ package fr.dzzd.glsprite;
 
 import android.graphics.Matrix;
 import java.util.*;
+import org.appcelerator.kroll.KrollDict;
 
 public class GLEntity
 {
@@ -218,6 +219,21 @@ public class GLEntity
             (child.nextElement()).updateMatrix(this.matrix);
         }
 
+    }
+
+    public void getProperties(Vector<KrollDict> v)
+    {
+        KrollDict props = new KrollDict();
+        props.put("x",x);
+        props.put("y",y);
+        props.put("r",r);
+        props.put("x",x);
+        v.add(props);
+
+        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        {
+            (child.nextElement()).getProperties(v);
+        }
     }
 
     public void getFlattenedEntities(Vector<GLEntity> flattenedEntities)

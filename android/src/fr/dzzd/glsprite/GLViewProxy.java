@@ -11,6 +11,8 @@ package fr.dzzd.glsprite;
 
 
 import java.util.HashMap;
+import java.util.Vector;
+import java.util.Enumeration;
 
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollObject;
@@ -31,7 +33,7 @@ import android.app.Activity;
 
 // This proxy can be created by calling Glsprite.createGLView({message: "hello world"})
 @Kroll.proxy(creatableInModule=GlspriteModule.class)
-public class GLViewProxy extends TiViewProxy
+public class GLViewProxy extends TiViewProxy implements GLViewListener
 {
 	// Standard Debugging variables
 	private static final String LCAT = "ExampleProxy";
@@ -41,7 +43,7 @@ public class GLViewProxy extends TiViewProxy
     private KrollFunction onChangedCallback = null;
     private KrollFunction onDrawCallback = null;
 
-	public GLView glView;
+	public TIGLView tiGlView;
 
 	// Constructor
 	public GLViewProxy()
@@ -53,9 +55,10 @@ public class GLViewProxy extends TiViewProxy
 	public TiUIView createView(Activity activity)
 	{
 		Log.i("GLSprite", "GLViewProxy.createView(activity)");
-		return new TView(this, activity);
+		this.tiGlView = new TIGLView(this);
+		return this.tiGlView;
 	}
-
+/*
 	public class TView extends TiUIView
 	{
 
@@ -71,7 +74,7 @@ public class GLViewProxy extends TiViewProxy
 
 		}
 	}
-
+*/
 	// Handle creation options
 	@Override
 	public void handleCreationDict(KrollDict options)
@@ -101,40 +104,127 @@ public class GLViewProxy extends TiViewProxy
 		}
 	}
 
-	public void onCreated()
-	{
+
+
+    public void onCreated()
+    {
+		this.fireEvent("created", new Object());
 		if(this.onCreatedCallback != null)
 		{
 			HashMap<String, String> event = new HashMap<String, String>();
     		this.onCreatedCallback.call(this.getKrollObject(), event);
 		}
-	}
-	
-	public void onChanged(int width, int height)
-	{
+
+    }
+    
+    public void onChanged(int width, int height)
+    {
+		HashMap<String, String> event = new HashMap<String, String>();
+		event.put("width", String.valueOf(width));
+		event.put("height", String.valueOf(height));
+
+		this.fireEvent("changed", event);
 		if(this.onChangedCallback != null)
 		{
-			HashMap<String, String> event = new HashMap<String, String>();
-			event.put("width", String.valueOf(width));
-			event.put("height", String.valueOf(height));
     		this.onChangedCallback.call(this.getKrollObject(), event);
 		}
+        
+        
 	}
-
-	public void onDraw()
-	{
+	
+    
+    public void onDraw()
+    {
+		this.fireEvent("draw", new Object());
 		if(this.onDrawCallback != null)
 		{
 			HashMap<String, String> event = new HashMap<String, String>();
     		this.onDrawCallback.call(this.getKrollObject(), event);
 		}
+        
 	}
 	
+	@Kroll.method
+	public void setEntityPos(int index, float x, float y, float r, float sx, float sy, float px, float py)
+	{
+		GLEntity glEntity =  this.getScene().getChildAt(index);
+		glEntity.x = x;
+		glEntity.y = y;
+		glEntity.r = r;
+		glEntity.sx = sx;
+		glEntity.sy = sy;
+		glEntity.px = px;
+		glEntity.py = py;
+	}
+
+	
+	@Kroll.method
+	public void setEntityPos(int index[], float x[], float y[], int count)//, float r, float sx, float sy, float px, float py)
+	{
+		Vector<GLEntity> flattenedEntities = new Vector<GLEntity>();
+		this.getScene().getFlattenedEntities(flattenedEntities);
+		for(int n = 0; n<count;n++)
+		{
+			GLEntity glEntity =  this.getScene().getChildAt(index[n]);
+			glEntity.x=x[n];
+			glEntity.y=y[n];
+		}
+	}
+
+	@Kroll.method
+	public KrollDict[] getFullScene()
+	{
+		Vector<KrollDict> v = new Vector<KrollDict>();
+		this.getScene().getProperties(v);
+		KrollDict[] k = new KrollDict[v.size()];
+
+		int n =0;
+		for (Enumeration<KrollDict> e = v.elements(); e.hasMoreElements();)
+        {
+            k[n++]=e.nextElement();
+		}
+		return k;
+	}
+
+	
+
+
+	@Kroll.method
+	public int testPerf(int test)
+	{
+		return test+1;
+	}
+
 	@Kroll.method
 	public Object createGLSprite(String filePath)
 	{
 		Log.i("GLSprite", "ExampleProxy.createGLSprite(" + filePath + ")");
 		return new GLSprite(filePath);
+	}
+
+	@Kroll.method
+	public GLScene getScene()
+	{
+		//Log.i("GLSprite", "ExampleProxy.getScene()");
+		return this.tiGlView.getScene();
+	}
+
+	@Kroll.method
+	public void addSprite(KrollDict options)
+	{
+		GLSprite sprite = new GLSprite((String)options.get("url"), options);
+		this.tiGlView.getScene().add(sprite);
+	}
+
+	@Kroll.method
+	public void addSprite2()
+	{
+	}
+
+	@Kroll.method
+	public void updateBulkModeXY(int[] datas, boolean packetFull)
+	{
+		this.tiGlView.getScene().updateBulkModeXY(datas, packetFull);
 	}
 	
 	/*
