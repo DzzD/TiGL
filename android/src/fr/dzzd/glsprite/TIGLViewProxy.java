@@ -40,7 +40,7 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	private static final String LCAT = "ExampleProxy";
 	private static final boolean DBG = TiConfig.LOGD;
 
-	private String backgroundColor;
+	private String backgroundColor = "white";
 	private TIGLView tiglView;
 
 

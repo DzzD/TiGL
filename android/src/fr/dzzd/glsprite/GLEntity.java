@@ -79,6 +79,40 @@ public class GLEntity
         return GLEntity.idGenerator++;
     }
 
+    public static float propertyToFloat(Object obj)
+    {
+
+        if(obj == null)
+        {
+            return 0;
+        }
+
+        
+        if(obj instanceof Float)
+        {
+            return (float)obj;
+        }
+
+        if(obj instanceof Double)
+        {
+            return ((Double)obj).floatValue();
+        }
+
+
+        if(obj instanceof Integer)
+        {
+            return ((Integer)obj).floatValue();
+        }
+
+        if(obj instanceof String)
+        {
+            return Float.parseFloat((String)obj);
+        }
+
+        return 0;
+
+    }
+
     /*
      * Create a ne GLEntity
      *
@@ -88,13 +122,13 @@ public class GLEntity
     {
         this.id = GLEntity.getNewUid();
         this.type = GL_ENTITY;
-        this.x = options.get("x") != null ? (float)options.get("x") : 0;
-        this.y = options.get("y") != null ? (float)options.get("y") : 0;
-        this.r = options.get("r") != null ? (float)options.get("r") : 0;
-        this.px = options.get("py") != null ? (float)options.get("px") : 0;
-        this.py = options.get("px") != null ? (float)options.get("py") : 0;
-        this.sx = options.get("sx") != null ? (float)options.get("sx") : 1;
-        this.sy = options.get("sy") != null ? (float)options.get("sy") : 1;
+        this.x = options.get("x") != null ? GLEntity.propertyToFloat(options.get("x")) : 0;
+        this.y = options.get("y") != null ? GLEntity.propertyToFloat(options.get("y")) : 0;
+        this.r = options.get("r") != null ? GLEntity.propertyToFloat(options.get("r")) : 0;
+        this.px = options.get("py") != null ? GLEntity.propertyToFloat(options.get("px")) : 0;
+        this.py = options.get("px") != null ? GLEntity.propertyToFloat(options.get("py")) : 0;
+        this.sx = options.get("sx") != null ? GLEntity.propertyToFloat(options.get("sx")) : 1;
+        this.sy = options.get("sy") != null ? GLEntity.propertyToFloat(options.get("sy")) : 1;
         this.parent= null;
         this.childs = new ArrayList<GLEntity>();
         this.matrix =  new Matrix();
