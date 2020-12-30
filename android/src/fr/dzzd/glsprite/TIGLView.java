@@ -15,17 +15,23 @@ public class TIGLView extends TiUIView //implements GLViewListener
     {
         super(proxy);
         this.proxy = proxy;
-        this.glView = new GLView();
-        this.glView.setGLViewListener(proxy);
-        this.setNativeView(this.glView);
 		this.getLayoutParams().autoFillsHeight = true;
 		this.getLayoutParams().autoFillsWidth = true;
+        this.glView = new GLView();
+        this.glView.setBackgroundColor(proxy.getBackgroundcolor());
         this.setNativeView(this.glView);
+        this.glView.setGLViewListener(proxy);
     }
 
     public GLScene getScene()
     {
         return this.glView.getScene();
+    }
+
+    
+    public GLView  getGLView()
+    {
+        return this.glView;
     }
 
 }

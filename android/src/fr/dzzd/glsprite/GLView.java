@@ -15,6 +15,7 @@ import javax.microedition.khronos.opengles.GL10;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.GLSurfaceView;
+import android.graphics.Color;
 
 public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLViewListener
 {
@@ -25,6 +26,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
      */
     private GLScene scene;
 
+    private int totalFrameCount = 0;
     private int frameCount = 0;
     private long oglTime = 0;
     private long jsTime = 0;
@@ -39,11 +41,14 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
 
     private GLViewListener glViewListener;
 
+    private int backgroundColor;
+
     
     public GLView() 
     {
         super(TiApplication.getAppCurrentActivity());
         Log.i("GLSprite", "GLView() Thread ==> " + Thread.currentThread());
+        this.setBackgroundColor("#FFFFFF");
         this.setEGLContextClientVersion(2);
         this.setPreserveEGLContextOnPause(true);
         this.setRenderer(this);
@@ -81,6 +86,11 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
        return (int)this.fps;
     }
 
+    public void setBackgroundColor(String color)
+    {
+        this.backgroundColor = Color.parseColor(color);
+    }
+
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config)
@@ -89,7 +99,10 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         {
             Log.i("TIGL", "GLView - NO CURRENT CONTEXT EGL(onSurfaceCreated)");
         }
+        
         GLShader.initShaders();
+        BitmapCache.clear();
+        GLTextureCache.clear();
         this.scene = new GLScene();
         this.fpsFrameCount = 0;
         this.fpsTime = System.nanoTime();
@@ -97,8 +110,12 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         GLES20.glEnable(GLES20.GL_BLEND);
         GLES20.glDisable(GLES20.GL_DEPTH_TEST);
         GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
-        GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        GLES20.glClearColor(((this.backgroundColor>>16)&0xFF)/255f,
+                            ((this.backgroundColor>>8)&0xFF)/255f,
+                            ((this.backgroundColor)&0xFF)/255f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT|GLES20.GL_DEPTH_BUFFER_BIT|GLES20.GL_STENCIL_BUFFER_BIT);
 
+        
         
         this.glViewListener.onInit();
     }
@@ -134,22 +151,30 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         this.glViewListener.onLoop();
 
         long t1 = System.nanoTime();
-
+        
+            //Log.e("TIGL", " Entity count = " + this.scene.getChildrenCount());
+            
         Matrix matrix = new Matrix();
         matrix.reset();
         matrix.postScale(2f/width,-2f/height);
         matrix.postTranslate(-1f, 1f);
         this.scene.updateMatrix(matrix);
         
+        
 
         
-        //GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        
         long t2 = System.nanoTime();
         
         
         /*
          * Draw OpenGL scene
          */
+        GLES20.glClearColor(((this.backgroundColor>>16)&0xFF)/255f,
+                            ((this.backgroundColor>>8)&0xFF)/255f,
+                            ((this.backgroundColor)&0xFF)/255f, 1.0f);
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
         this.scene.draw();
 
         
@@ -162,7 +187,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
 
         this.fpsFrameCount++;
 
-        if(frameCount == 100)
+        if(frameCount == 300)
         {
             this.fps = 1000000000 * this.fpsFrameCount / (System.nanoTime() - this.fpsTime);
             this.fpsFrameCount = 0;
@@ -190,6 +215,8 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
             matTime = 0;
 
         }
+
+        this.totalFrameCount++;
 
         
     }

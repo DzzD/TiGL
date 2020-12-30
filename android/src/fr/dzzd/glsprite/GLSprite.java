@@ -230,6 +230,7 @@ public class GLSprite extends GLEntity
     @Override
     public void drawSingle()
     {
+        //Log.i("TIGL", "GLSprite : drawSingle()");
         this.matrix.mapPoints(verts, 0, this.vertices, 0, 4);
         vbuff.clear();
         vbuff.put(verts, 0, 8);
@@ -238,11 +239,12 @@ public class GLSprite extends GLEntity
     }
     
     @Override
-    public void drawBatch(Vector<GLEntity> entities)
+    public void drawBatch(ArrayList<GLEntity> entities)
     {
         if(tmpBufferCapacity<entities.size())
         {
-            tmpBufferCapacity = entities.size();
+            tmpBufferCapacity = entities.size() + 1000;
+            Log.i("TIGL", "GLSprite : increase draw buffer size to " + tmpBufferCapacity);
             verts= new float[6 * 2 * tmpBufferCapacity];
             uvsb = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
             vbuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
@@ -250,11 +252,11 @@ public class GLSprite extends GLEntity
 
         uvsb.clear();
         int count = 0;
-        for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
+        //for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
+        Iterator<GLEntity> childIterator = entities.iterator();
+        while (childIterator.hasNext()) 
         {
-            
-
-            GLSprite sprite = (GLSprite)e.nextElement();
+            GLSprite sprite = (GLSprite)childIterator.next();
             sprite.matrix.mapPoints(verts, count * 2 * 6, sprite.vertices, 0, 4);
             verts[count * 2 * 6 + 8 ] = verts[count * 2 * 6 + 0 ];
             verts[count * 2 * 6 + 9 ] = verts[count * 2 * 6 + 1 ];
@@ -272,10 +274,7 @@ public class GLSprite extends GLEntity
             count++;
             
         }
-        if(vbuff.hasArray())
-        {
-            Log.i("GLSprite", "Backed array");
-        }
+      
 
         vbuff.clear();
         vbuff.put(verts, 0, count * 12);

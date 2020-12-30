@@ -1,6 +1,7 @@
 package fr.dzzd.glsprite;
 
 
+import android.graphics.Matrix;
 import org.appcelerator.kroll.common.Log;
 import java.util.*;
 import java.util.Map.Entry;
@@ -9,14 +10,16 @@ import java.nio.*;
 public class GLScene extends GLEntity
 {
     private boolean batchRenderingMode;
-    private Vector<GLEntity> flattenedEntities;
+    private ArrayList<GLEntity> flattenedEntities;
+    private HashMap<Integer,GLEntity> entities;
 
     public GLScene()
     {
         super(new HashMap<String,Object>());
         this.type = GL_SCENE;
         this.batchRenderingMode = true;
-        this.flattenedEntities = new Vector<GLEntity>();
+        this.flattenedEntities = new ArrayList<GLEntity>();
+        this.entities = new HashMap<Integer,GLEntity>();
     }
 
     public void setBatchRenderingMode(boolean flag)
@@ -24,23 +27,36 @@ public class GLScene extends GLEntity
         this.batchRenderingMode = flag;
     }
 
+    public HashMap<Integer,GLEntity> getEntities()
+    {
+        return this.entities;
+    }
+
+    public GLEntity getEntityById(int id)
+    {
+        return this.entities.get(id);
+    }
+
+
     public void draw()
     {        
-        int entityCount = 1 + this.getChildrenCount();
-        
-        // Log.i("GLSprite", "Entities count A = " + entityCount);
+       
         this.flattenedEntities.clear();
-        this.flattenedEntities.ensureCapacity(entityCount);
-        this.getFlattenedEntities(this.flattenedEntities);
-
+        this.flattenedEntities.ensureCapacity(this.entities.size());
+        for (Map.Entry<Integer, GLEntity> entity : this.entities.entrySet()) 
+        {
+            this.flattenedEntities.add(entity.getValue());
+        }
+        
 
         /*
-         * Prepare each entity for drawing
+         * Prepare all entities for drawing
          */
-        for (Enumeration<GLEntity> entities = this.flattenedEntities.elements(); entities.hasMoreElements();)
+        Iterator<GLEntity> entitiesIterator = this.flattenedEntities.iterator();
+        while (entitiesIterator.hasNext()) 
         {
-            (entities.nextElement()).prepareDrawing();
-        }
+            (entitiesIterator.next()).prepareDrawing();
+        } 
 
 
         if(!this.batchRenderingMode)
@@ -49,10 +65,10 @@ public class GLScene extends GLEntity
             * Draw each entity alone independently of others
             * @todo : implements ordering based on entity drawing/z priority
             */
-            for (Enumeration<GLEntity> entities = this.flattenedEntities.elements(); entities.hasMoreElements();)
+            entitiesIterator = this.flattenedEntities.iterator();
+            while (entitiesIterator.hasNext()) 
             {
-                GLEntity entity = entities.nextElement();
-                entity.drawSingle();
+                (entitiesIterator.next()).drawSingle();
             }
             return;
         }
@@ -61,22 +77,22 @@ public class GLScene extends GLEntity
          * Draw all entities with the same material (based uppon texture, opacity, effects, etc...) together in a single pass
          * @todo : implements ordering based on entity drawing/z priority
          */
-        HashMap<Integer,Vector<GLEntity>> materialLayers = new HashMap<Integer,Vector<GLEntity>>();
+        HashMap<Integer,ArrayList<GLEntity>> materialLayers = new HashMap<Integer,ArrayList<GLEntity>>();
         
 
         /*
          * Arrange entities in different layers depending on their materials
          * @todo : add drawing/z priority for arranging
          */
-        for (Enumeration<GLEntity> entities = this.flattenedEntities.elements(); entities.hasMoreElements();)
+        entitiesIterator = this.flattenedEntities.iterator();
+        while (entitiesIterator.hasNext()) 
         {
-            //Log.i("GLSprite", "GLScene.draw() entities.nextElement()");
-                GLEntity entity = entities.nextElement();
-                Vector<GLEntity> layer = materialLayers.get(entity.getMaterialUid());
+                GLEntity entity = entitiesIterator.next();
+                ArrayList<GLEntity> layer = materialLayers.get(entity.getMaterialUid());
                 if(layer == null)
                 {
                    
-                    layer = new Vector<GLEntity>();
+                    layer = new ArrayList<GLEntity>();
                     materialLayers.put(entity.getMaterialUid(),layer);
                 }
                 layer.add(entity);
@@ -84,27 +100,27 @@ public class GLScene extends GLEntity
        
 
         /* 
-         * Set all layers within a Vector
+         * Set all layers within an ArrayList
          * @todo : implement ordering of layers
          */
-        Vector<Vector<GLEntity>> layers = new Vector<Vector<GLEntity>>(materialLayers.size());
-        for (Map.Entry<Integer, Vector<GLEntity>> entry : materialLayers.entrySet()) 
+        Vector<ArrayList<GLEntity>> layers = new Vector<ArrayList<GLEntity>>(materialLayers.size());
+        for (Map.Entry<Integer, ArrayList<GLEntity>> layer : materialLayers.entrySet()) 
         {
             
-            layers.add(entry.getValue());
+            layers.add(layer.getValue());
         }
+        
 
         /*
          * Draw all layers
          */
-        for (Enumeration<Vector<GLEntity>> layer = layers.elements(); layer.hasMoreElements();)
+        for (Enumeration<ArrayList<GLEntity>> layer = layers.elements(); layer.hasMoreElements();)
         {
-            Vector<GLEntity> entities = layer.nextElement();
+            ArrayList<GLEntity> entities = layer.nextElement();
             if(entities.get(0).type == GL_SPRITE)
             {
-                GLSprite entity = (GLSprite)entities.elementAt(0);
+                GLSprite entity = (GLSprite)entities.get(0);
                 entity.drawBatch(entities);
-                
             }
             
 

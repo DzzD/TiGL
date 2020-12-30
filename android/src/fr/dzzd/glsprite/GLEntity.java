@@ -8,9 +8,7 @@ import org.appcelerator.kroll.KrollDict;
 
 public class GLEntity
 {
-    private static int idGenerator = 1;
-
-    
+    private static int idGenerator = 0;
 
     public final static int GL_ENTITY = 0;
     public final static int GL_SCENE = 1;
@@ -59,7 +57,7 @@ public class GLEntity
     /*
      * Children list
      */
-    protected Vector<GLEntity> childs;
+    protected ArrayList<GLEntity> childs;
 
     /*
      * Parent of this GLEntity
@@ -98,7 +96,7 @@ public class GLEntity
         this.sx = options.get("sx") != null ? (float)options.get("sx") : 1;
         this.sy = options.get("sy") != null ? (float)options.get("sy") : 1;
         this.parent= null;
-        this.childs = new Vector<GLEntity>();
+        this.childs = new ArrayList<GLEntity>();
         this.matrix =  new Matrix();
 /*
         Log.i("TIGL", "GLEntity: x :" + this.x);
@@ -132,19 +130,33 @@ public class GLEntity
 
     
     /*
-     * Adds a new child
+     * Remove a child
+     *  this should also remove it from the scene entities (as well as its childrens)
+     * @todo : process child entities !!
      */
-    public int add(GLEntity glEntity)
+    public synchronized void remove(GLEntity glEntity)
+    {
+        this.childs.remove(glEntity);
+        this.getScene().getEntities().remove(glEntity.id);
+    }
+
+    
+    /*
+     * Adds a new child
+     *  This also add it to the scene entities (as well as its childrens)
+     * @todo : process child entities !!
+     */
+    public synchronized void add(GLEntity glEntity)
     {
         this.childs.add(glEntity);
-        return this.childs.size() - 1;
+        this.getScene().getEntities().put(glEntity.id, glEntity);
     }
 
        
     /*
      * Gets childrens 
      */
-    public Vector<GLEntity> getChildrens()
+    public synchronized ArrayList<GLEntity> getChildrens()
     {
         return this.childs;
     }
@@ -152,9 +164,13 @@ public class GLEntity
     /*
      * Gets children at Nth pos
      * */
-    public GLEntity getChildAt(int n)
+    public synchronized GLEntity getChildAt(int n)
     {
-        return this.childs.elementAt(n);
+        if(n < 0 || n >= this.childs.size())
+        {
+            return null;
+        }
+        return this.childs.get(n);
     }
 	
 	/*
@@ -223,27 +239,29 @@ public class GLEntity
     
     /* 
      * Update the current matrix using GLEntity properties and its parent's matrix
+     *  Matrix computation mey be a bit slow, so we only perform necessary transformation
      */
-    public void updateMatrix(Matrix matrix)
+    public synchronized void updateMatrix(Matrix matrix)
     {
         /*
          * Compute matrix and combine it with its parent's matrix
          */
         this.matrix.reset();
-        this.matrix.postTranslate(-this.px, -this.py);
-        this.matrix.postScale(this.sx, this.sy);
-        this.matrix.postRotate(this.r);
-        this.matrix.postTranslate(this.px + this.x, this.py + this.y);
+        //this.matrix.postTranslate(-this.px, -this.py);
+        if(this.sx != 1 || this.sy != 1) this.matrix.postScale(this.sx, this.sy, this.px, this.py);
+        if(this.r !=0) this.matrix.postRotate(this.r, this.px, this.py);
+        //this.matrix.postTranslate(this.px + this.x, this.py + this.y);
+        this.matrix.postTranslate(this.x - this.px, this.y - this.py);
         this.matrix.postConcat(matrix);
-
-        
 
         /*
          * Compute all childrens matrix
          */
-        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        //for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        Iterator<GLEntity> childIterator = this.childs.iterator();
+        while (childIterator.hasNext()) 
         {
-            (child.nextElement()).updateMatrix(this.matrix);
+            (childIterator.next()).updateMatrix(this.matrix);
         }
 
     }
@@ -257,29 +275,35 @@ public class GLEntity
         props.put("x",x);
         v.add(props);
 
-        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        //for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        
+        Iterator<GLEntity> childIterator = this.childs.iterator();
+        while (childIterator.hasNext()) 
         {
-            (child.nextElement()).getProperties(v);
+            (childIterator.next()).getProperties(v);
         }
     }
 
-    public void getFlattenedEntities(Vector<GLEntity> flattenedEntities)
-    {
-        flattenedEntities.add(this);
-        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
-        {
-            (child.nextElement()).getFlattenedEntities(flattenedEntities);
-        }
-    }
-
-    public int getChildrenCount()
+    public synchronized int getChildrenCount()
     {
         int count = this.childs.size();
-        for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+        //for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
+       
+        Iterator<GLEntity> childIterator = this.childs.iterator();
+        while (childIterator.hasNext()) 
         {
-            count+=(child.nextElement()).getChildrenCount();
+            count+=(childIterator.next()).getChildrenCount();
         }
         return count;
+    }
+
+    public GLScene getScene()
+    {
+        if(this instanceof GLScene)
+        {
+            return (GLScene)this;
+        }
+        return this.parent.getScene();
     }
 
 
@@ -292,62 +316,36 @@ public class GLEntity
      *  GLES20 functions are available for drawing and can be called within this method. 
      *  Drawing must be done in object space as the transformation Matrix is already applied.
      */
-    /*
     public void drawSingle()
     {
-        if(!this.drawFlattenedEnabled)
-        {
-            for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
-            {
-                (child.nextElement()).draw();
-            }
-        }
-        else
-        {*/
-            /*
-             * Flatten this entity and all its children in a single Vector
-             */
-            // Vector<GLEntity> flattenedEntities = new Vector<GLEntity>();
-            // this.getFlattenedEntities(flattenedEntities);
 
-            /*
-             * Arrange entities in different layers depending on their materials
-             */
-           /* HashMap<Integer><Vector<GLEntity>> materialLayers=new HashMap<Integer><Vector<GLEntity>>();
-            for (Enumeration<GLEntity> entities = this.flattenedEntities.elements(); entities.hasMoreElements();)
-            {
-                GLEntity entity = entities.nextElement();
-                Vector<GLEntity> layer = materialLayers.get(entity.getMaterialUid());
-                if(!layer)
-                {
-                    layer = new Vector<GLEntity>();
-                    materialLayers.put(entity.getMaterialUid(),layer);
-                }
-                layer.put(entity);
-            }
+    }
+    
+
+    /*
+     * Draw a list of GLEntity on the GLView.
+     *
+     *  If this class is not overrided it will call drawSingle for each entry of the given list
+     *  For performance reason it is good to implement it in all subclass
+     * 
+     *  To enable batch drawing, all entitiy in this list should have the same material UID
+     */
+    public synchronized void drawBatch(ArrayList<GLEntity> entities)
+    {
+        //for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
+        Iterator<GLEntity> childIterator = this.childs.iterator();
+        while (childIterator.hasNext()) 
+        {
+            childIterator.next().drawSingle();
         }
 
     }
-*/
 
 
     public void prepareDrawing()
     {
     }
 
-    public void drawSingle()
-    {
-
-    }
-
-    public void drawBatch(Vector<GLEntity> entities)
-    {
-        for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
-        {
-            e.nextElement().drawSingle();
-        }
-
-    }
 
     
 

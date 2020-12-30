@@ -24,6 +24,11 @@ public class BitmapCache
 		return load(filePath, true);
 	}
 
+	public static void clear()
+	{
+		caches.clear();
+	}
+
 
     public static Bitmap load(String filePath, boolean useCache) throws Exception
     {

@@ -12,6 +12,13 @@ public class GLTextureCache
 {
     private static HashMap<String,Integer> caches = new HashMap<String,Integer>();
     
+    
+	public static void clear()
+	{
+		caches.clear();
+	}
+
+
     public static int create(HashMap<String,Object> options, boolean usecache)
     {
         //Log.i("GLSprite","TextureCache.create()");

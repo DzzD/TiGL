@@ -9,8 +9,8 @@
 package fr.dzzd.glsprite;
 
 
-
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.Enumeration;
 
@@ -27,6 +27,7 @@ import org.appcelerator.titanium.proxy.TiViewProxy;
 import org.appcelerator.titanium.view.TiCompositeLayout;
 import org.appcelerator.titanium.view.TiCompositeLayout.LayoutArrangement;
 import org.appcelerator.titanium.view.TiUIView;
+import org.appcelerator.titanium.util.TiConvert;
 
 import android.app.Activity;
 
@@ -39,56 +40,58 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	private static final String LCAT = "ExampleProxy";
 	private static final boolean DBG = TiConfig.LOGD;
 
-	private TIGLView tiGlView;
+	private String backgroundColor;
+	private TIGLView tiglView;
 
 
 	@Override
 	public TiUIView createView(Activity activity)
 	{
 		Log.i("GLSprite", "GLViewProxy.createView(activity)");
-		this.tiGlView = new TIGLView(this);
-		return this.tiGlView;
+		this.tiglView = new TIGLView(this);
+		return this.tiglView;
 	}
-/*
-	public class TView extends TiUIView
-	{
 
-		public TView(GLViewProxy proxy, Activity activity)
-		{
-			super(proxy);
-			proxy.glView = new GLView();
-			this.setNativeView(proxy.glView);
-			this.getLayoutParams().autoFillsHeight = true;
-			this.getLayoutParams().autoFillsWidth = true;
-
-			Log.i("GLSprite", "TView(TiViewProxy, GLView)");
-
-		}
-	}
-*/
-	// Handle creation options
+	/*
+	 * Handle creation options (Alloy tag attributes)
+	 * Parent call is disabled as it is bugged for backgroundColor
+	 * */
 	@Override
 	public void handleCreationDict(KrollDict options)
 	{
-		super.handleCreationDict(options);
+		//super.handleCreationDict(options); //Should not be called
 
-		Log.i("GLSprite", "GLViewProxy.handleCreationDict(KrollDict)");
 
-		if (options.containsKey("message")) 
+		if (options.containsKey("backgroundcolor")) 
 		{
-			Log.i("GLSprite", "GLViewProxy.handleCreationDict(KrollDict) => option.containsKey('message')");
+			Log.i("TIGL", "TIGLView backgroundcolor detected " + options.get("backgroundcolor"));
+			this.setBackgroundcolor((String)options.get("backgroundcolor"));
 		}
+
 		
+		if (options.containsKey("backgroundColor")) 
+		{
+			Log.i("TIGL", "TIGLView backgroundColor detected " + options.get("backgroundColor"));
+			this.setBackgroundcolor((String)options.get("backgroundColor"));
+		}
 
 	}
 
 
-
+	/*
+	 * GLViewListener callback onInit
+	 *  fireEvent "init" to Javascript
+	 * */
     public void onInit()
     {
 		this.fireEvent("init", new Object());
     }
-    
+	
+	
+	/*
+	 * GLViewListener callback onResize
+	 *  fireEvent "resize" to Javascript
+	 * */
     public void onResize(int width, int height)
     {
 		HashMap<String, String> event = new HashMap<String, String>();
@@ -97,53 +100,144 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		this.fireEvent("resize", event);
 	}
 	
+	/*
+	 * GLViewListener callback onLoop
+	 *  fireEvent "loop" to Javascript
+	 * */
     public void onLoop()
     {
 		this.fireEvent("loop", new Object());
 	}
-	
 
+	/* 
+	 * Pause the OpenGL rendering thread
+	 */
 	@Kroll.method
-	public void setEntityPos(int index, float x, float y, float r, float sx, float sy, float px, float py)
+	public void pause()
 	{
-		GLEntity glEntity =  this.getScene().getChildAt(index);
+		this.tiglView.getGLView().onPause();
+	}
+
+	/* 
+	 * Resume the OpenGL rendering thread
+	 */
+	@Kroll.method
+	public void resume()
+	{
+		this.tiglView.getGLView().onResume();
+	}
+
+	
+	@Kroll.method
+	public void setEntityPositionById(int id, float x, float y)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
 		glEntity.x = x;
 		glEntity.y = y;
+	}
+
+	
+	@Kroll.method
+	public void setEntityRotationById(int id, float r)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
 		glEntity.r = r;
+	}
+
+	
+	@Kroll.method
+	public void setEntityScaleById(int id, float sx, float sy)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
 		glEntity.sx = sx;
 		glEntity.sy = sy;
+	}
+	
+	@Kroll.method
+	public void setEntityPivotById(int id, float px, float py)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
 		glEntity.px = px;
 		glEntity.py = py;
 	}
 
+
+
+	@Kroll.method
+	public void setEntityPos(int index, float x, float y, float r, float sx, float sy, float px, float py)
+	{
+	
+
+			GLEntity glEntity =  this.tiglView.getScene().getChildAt(index);
+			if(glEntity == null)
+			{
+				return;
+			}
+			glEntity.x = x;
+			glEntity.y = y;
+			glEntity.r = r;
+			glEntity.sx = sx;
+			glEntity.sy = sy;
+			glEntity.px = px;
+			glEntity.py = py;
+		
+	}
+
+	@Kroll.method
+	public void wakeup() throws Exception
+	{
+		Log.i("TIGL", " TIGLViewProxy Wakeup");
+	}
 	
 	@Kroll.method
-	public void setEntityPos(int index[], int x[], int y[], int count)//, float r, float sx, float sy, float px, float py)
+	public void setEntityPos(int index[], float x[], float y[], int count)//, float r, float sx, float sy, float px, float py)
 	{
-		Vector<GLEntity> flattenedEntities = new Vector<GLEntity>();
-		this.getScene().getFlattenedEntities(flattenedEntities);
+		//ArrayList<GLEntity> flattenedEntities = new ArrayList<GLEntity>();
+		//this.tiglView.getScene().getFlattenedEntities(flattenedEntities);
+		return;
+		/*
 		for(int n = 0; n < count; n++)
 		{
-			GLEntity glEntity =  this.getScene().getChildAt(index[n]);
+
+			GLEntity glEntity =  this.tiglView.getScene().getChildAt(index[n]);
 			glEntity.x=x[n];
 			glEntity.y=y[n];
 		}
+		*/
 	}
 
+	/*
+	 * Set position for a list of entities
+	 * 
+	 * We use Explicit conversion because Implicit (see https://github.com/appcelerator/titanium_mobile/blob/07592855ee22082c16f25f94155f3c759ba477c5/android/titanium/src/java/org/appcelerator/titanium/util/TiConvert.java)
+     *  créate un unecessary array, also explicit conversion enable mixing int and float
+	 */
 	
-	@Kroll.method
-	public int addSprite(HashMap<String,Object> options)
+    @Kroll.method
+	public void setEntityPosPacked(int[] r)//, float r, float sx, float sy, float px, float py)
 	{
-		GLSprite sprite = new GLSprite(options);
-		this.getScene().add(sprite);
-		return sprite.id;
+		//ArrayList<GLEntity> flattenedEntities = new ArrayList<GLEntity>();
+		//this.tiglView.getScene().getFlattenedEntities(flattenedEntities);
+
+		//int[] r = TiConvert.toIntArray((Object[])packPosXY[0]);
+		//Object[] r = (Object[])packPosXY[0];
+		for(int n = 0; n < r.length; n+=2)
+		{
+			int id=r[n];
+			int packedPosXY=r[n+1];
+			GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
+			glEntity.x=((packedPosXY >> 16) & 0xFFFF) - 32768;
+			glEntity.y=(packedPosXY &0xFFFF) - 32768;
+		}
+		
 	}
+
 
 	@Kroll.method
 	public KrollDict[] getFullScene()
 	{
 		Vector<KrollDict> v = new Vector<KrollDict>();
-		this.getScene().getProperties(v);
+		this.tiglView.getScene().getProperties(v);
 		KrollDict[] k = new KrollDict[v.size()];
 
 		int n =0;
@@ -168,36 +262,63 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	@Kroll.method
 	public GLScene getScene()
 	{
-		return this.tiGlView.getScene();
+		return this.tiglView.getScene();
 	}
 
+	
 	@Kroll.method
 	public int addSprite(KrollDict options)
 	{
-		GLSprite sprite = new GLSprite(options);
-		this.tiGlView.getScene().add(sprite);
-		return sprite.id;
+			GLSprite sprite = new GLSprite(options);
+			this.tiglView.getScene().add(sprite);
+			return sprite.id;
 	}
 
+/*
+	
 	@Kroll.method
-	public void addSprite2()
+	public int addSprite(HashMap<String,Object> options)
 	{
+		synchronized(this.getScene())
+		{
+			GLSprite sprite = new GLSprite(options);
+			this.tiglView.getScene().add(sprite);
+			return sprite.id;
+		}
+		
 	}
+
+	*/
+
+
+
 
 	@Kroll.method
 	public void updateBulkModeXY(int[] datas, boolean packetFull)
 	{
-		this.tiGlView.getScene().updateBulkModeXY(datas, packetFull);
+		this.tiglView.getScene().updateBulkModeXY(datas, packetFull);
 	}
-	
 
-	
-	
+	@Kroll.setProperty @Kroll.method
+	public void setBackgroundcolor(String color)
+	{
+		if(this.tiglView != null)
+		{
+			this.tiglView.getGLView().setBackgroundColor(color);
+		}
+		this.backgroundColor = color;
+	}
+
+	@Kroll.getProperty @Kroll.method
+	public String getBackgroundcolor()
+	{
+		return this.backgroundColor;
+	}
 
 	@Kroll.setProperty @Kroll.method
 	public void setMessage(String message)
 	{
-	    Log.i("GLSprite", "ExampleProxy.setMessage(" + message + ")");
+	    Log.i("TIGL", "ExampleProxy.setMessage(" + message + ")");
 	}
 
 }
