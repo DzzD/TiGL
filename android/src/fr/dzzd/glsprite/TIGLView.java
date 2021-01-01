@@ -19,6 +19,7 @@ public class TIGLView extends TiUIView //implements GLViewListener
 		this.getLayoutParams().autoFillsWidth = true;
         this.glView = new GLView();
         this.glView.setBackgroundColor(proxy.getBackgroundcolor());
+        this.glView.setUnits(proxy.getUnits());
         this.setNativeView(this.glView);
         this.glView.setGLViewListener(proxy);
     }

@@ -41,6 +41,7 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	private static final boolean DBG = TiConfig.LOGD;
 
 	private String backgroundColor = "white";
+	private String units = "px";
 	private TIGLView tiglView;
 
 
@@ -61,6 +62,12 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	{
 		//super.handleCreationDict(options); //Should not be called
 
+
+		if (options.containsKey("units")) 
+		{
+			Log.i("TIGL", "TIGLView units detected " + options.get("units"));
+			this.setUnits((String)options.get("units"));
+		}
 
 		if (options.containsKey("backgroundcolor")) 
 		{
@@ -92,11 +99,12 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	 * GLViewListener callback onResize
 	 *  fireEvent "resize" to Javascript
 	 * */
-    public void onResize(int width, int height)
+    public void onResize(float width, float height, String units)
     {
 		HashMap<String, String> event = new HashMap<String, String>();
 		event.put("width", String.valueOf(width));
 		event.put("height", String.valueOf(height));
+		event.put("units", units);
 		this.fireEvent("resize", event);
 	}
 	
@@ -314,6 +322,25 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	{
 		return this.backgroundColor;
 	}
+
+	
+	@Kroll.setProperty @Kroll.method
+	public void setUnits(String units)
+	{
+		if(this.tiglView != null)
+		{
+			this.tiglView.getGLView().setUnits(units);
+		}
+		this.units = units;
+	}
+
+	
+	@Kroll.getProperty @Kroll.method
+	public String getUnits()
+	{
+		return this.units;
+	}
+
 
 	@Kroll.setProperty @Kroll.method
 	public void setMessage(String message)

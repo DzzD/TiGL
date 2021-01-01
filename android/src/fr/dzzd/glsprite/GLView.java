@@ -2,6 +2,7 @@ package fr.dzzd.glsprite;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import android.util.DisplayMetrics;
 import org.appcelerator.titanium.TiApplication;
 import org.appcelerator.kroll.common.Log;
 import android.view.SurfaceHolder;
@@ -43,16 +44,26 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
 
     private int backgroundColor;
 
+    /*
+     * String defining unit to use : "dp" or "px" are accepted values
+     * */
+    private String units = "px"; 
+    private float unitsRatio = 1; 
+
+    private int screenDpi;
+
     
     public GLView() 
     {
         super(TiApplication.getAppCurrentActivity());
         Log.i("GLSprite", "GLView() Thread ==> " + Thread.currentThread());
         this.setBackgroundColor("#FFFFFF");
+        this.setUnits("px");
         this.setEGLContextClientVersion(2);
         this.setPreserveEGLContextOnPause(true);
         this.setRenderer(this);
         this.setGLViewListener(this);
+        this.screenDpi = this.getContext().getResources().getDisplayMetrics().densityDpi;
     }
 
     public void onInit()
@@ -60,7 +71,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
 
     }
     
-    public void onResize(int width, int height)
+    public void onResize(float width, float height, String units)
     {
         
         
@@ -89,6 +100,19 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     public void setBackgroundColor(String color)
     {
         this.backgroundColor = Color.parseColor(color);
+    }
+
+    
+    public void setUnits(String units)
+    {
+        this.units = units.toLowerCase();
+        
+        this.unitsRatio = 1f;
+        if("dp".equals(this.units))
+        {
+            this.unitsRatio = this.screenDpi/160f;
+        }       
+        Log.i("TIGL", "GLView - Units modified to " + this.units + " Units ratio is " + this.unitsRatio + " dpi is " + this.screenDpi);
     }
 
 
@@ -130,7 +154,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
 
         this.width = width;
         this.height = height;
-        this.glViewListener.onResize(width, height);
+        this.glViewListener.onResize(width  / this.unitsRatio, height  / this.unitsRatio, this.units);
     }
 
 
@@ -152,11 +176,14 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
 
         long t1 = System.nanoTime();
         
-            //Log.e("TIGL", " Entity count = " + this.scene.getChildrenCount());
-            
+        
+
+        /*
+         * Apply matrix transformation on all objects of the scene
+         * */
         Matrix matrix = new Matrix();
         matrix.reset();
-        matrix.postScale(2f/width,-2f/height);
+        matrix.postScale(2f/(this.width / this.unitsRatio),-2f/(this.height / this.unitsRatio));
         matrix.postTranslate(-1f, 1f);
         this.scene.updateMatrix(matrix);
         
