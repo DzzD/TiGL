@@ -1,11 +1,11 @@
 /*
 *	© Copyright DzzD, Bruno Augier 2013-2021 (bruno.augier@dzzd.net)
-*	This file is part of TIGL.
+*	 This file is part of TIGL.
 *
-*   TIGL is free software: you can redistribute it and/or modify
+*    TIGL is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
 *    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*    any later version.
 *
 *    TIGL is distributed in the hope that it will be useful,
 *    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -34,41 +34,53 @@ public class GLSprite extends GLEntity
     /*
      * Sprite vertices 
      */
-    public float[] vertices = 
-	{        
-		 0f,    200f,        
-	 	 0f,    0f,          
-		200f,   0f,      
-		200f,   200f
-    };
-
-   
+    public float[] vertices = new float[8];
     
     /*
      * Texture UV coordinates 
      */
+    public float[] uvs = new float[8];
     
-    public float[] uvs=
-	{
-		    0f,  1f,
-            0f,  0f,
-            1f,  0f,
-            1f,  1f
-    };
-    
-     
     public FloatBuffer vertexBuffer;
     public FloatBuffer uvsBuffer;
 
     private float width;
     private float height;
 
+    
+    private int pixelWidth;
+    private int pixelHeight;
+
+    /*
+     * Texture size, actually bitmap size used for this sprite
+     */
     private int textureWidth;
     private int textureHeight;
 
-    private int spriteColCount;
-    private int spriteRowCount;
-    private int frameCount;
+    /*
+    * Part of this bitmap used for this sprite
+    *  => using the same texture for multiple sprites can 
+    *     geatly improve performance via batch rendering
+    */
+    private int subTextureLeft;
+    private int subTextureTop;
+    private int subTextureWidth;
+    private int subTextureHeight;
+
+    
+    /*
+     * @todo : move everything about animation to GLEntity
+     */
+    private int animationFrameCount;
+    private int animationFrameColCount;
+    private int animationFrameRowCount;
+    private int animationFrame;
+    private int animationFrameStart = 0;
+    private int animationFrameEnd = 0;
+    private int animationLoop = 1;
+    private boolean animationPingPong = false;
+    private long animationStartTime = 0;
+    private int animationDuration = 0;
 
     public HashMap<String, Object> options;
 
@@ -86,23 +98,30 @@ public class GLSprite extends GLEntity
         this.pixelHeight = options.get("pixelHeight") != null ? GLEntity.propertyToInt(options.get("pixelHeight")) : -1;
         this.subTextureWidth = options.get("subTextureWidth") != null ? GLEntity.propertyToInt(options.get("subTextureWidth")) : -1;
         this.subTextureHeight = options.get("subTextureHeight") != null ? GLEntity.propertyToInt(options.get("subTextureHeight")) : -1;
-        this.subTextureLeft = options.get("subTextureLeft") != null ? GLEntity.propertyToInt(options.get("subTextureLeft")) : -1;
-        this.subTextureTop = options.get("subTextureTop") != null ? GLEntity.propertyToInt(options.get("subTextureTop")) : -1;
-        this.spriteColCount = 0;
-        this.spriteRowCount = 0;
+        this.subTextureLeft = options.get("subTextureLeft") != null ? GLEntity.propertyToInt(options.get("subTextureLeft")) : 0;
+        this.subTextureTop = options.get("subTextureTop") != null ? GLEntity.propertyToInt(options.get("subTextureTop")) : 0;
+        this.animationFrameCount = 1;
+        this.animationFrameColCount = 0;
+        this.animationFrameRowCount = 0;
+
+        this.animationFrame = -1;
+        this.animationFrameStart = 0;
+        this.animationFrameEnd = 0;
+        this.animationDuration = 0;
+        this.animationLoop = 0;
+        this.animationPingPong = false;
+        
         this.textureHandle = -1;
         this.textureWidth = -1;
         this.textureHeight = -1;
+
         this.options = new HashMap<String, Object>();
 
         /*
          * Initialze vertices and uvs buffers 
          */
         this.vertexBuffer = ByteBuffer.allocateDirect(this.vertices.length * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        this.vertexBuffer.put(this.vertices).position(0); 
-
         this.uvsBuffer = ByteBuffer.allocateDirect(this.uvs.length * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        this.uvsBuffer.put(this.uvs).position(0);
 
         try 
         {
@@ -119,37 +138,144 @@ public class GLSprite extends GLEntity
             Log.e("TIGL", "GLSprite: BitmapCache.load(" + options.get("url") + ") : " + e, e);
         }
 
-       
-        if(this.width == 0)
+        if(this.subTextureWidth == -1)
         {
-            this.width = this.textureWidth;
+            this.subTextureWidth = this.textureWidth - this.subTextureLeft;
+        }
+        
+        if(this.subTextureHeight == -1)
+        {
+            this.subTextureHeight = this.textureHeight - this.subTextureTop;
+        }
+       
+        if(this.width == -1)
+        {
+            this.width = this.subTextureWidth;
         }
 
-        if(this.height == 0)
+        if(this.height == -1)
         {
-            this.height = this.textureHeight;
+            this.height = this.subTextureHeight;
+        }
+
+        if(this.pixelWidth == -1)
+        {
+            this.pixelWidth = (int)this.width;
+        }
+
+        if(this.pixelHeight == -1)
+        {
+            this.pixelHeight = (int)this.height;
         }
 
         this.setSize(this.width, this.height);
 
-        this.spriteColCount = this.textureWidth / (int)this.width;
-        this.spriteRowCount = this.textureHeight / (int)this.height;
-        this.frameCount = this.spriteColCount * this.spriteRowCount;
-        if(this.frameCount <= 0)
-        {
-            this.frameCount = 1;
-            this.spriteColCount = 1;
-            this.spriteRowCount = 1;
-        }
-        this.setFrame(0);
+        this.computeAnimationFrames();
 
-        
+        this.setAnimationFrame(0);
     }
 
     /*
-     * Return an unique identifier for this sprite material
-     *  could be a combinaison of texture, opacity, effects, etc...
-     * This identifier is used to know wich entities/sprite can be draw together
+     * @todo : move everything about animation to GLEntity
+     */
+    private void computeAnimationFrames()
+    {
+        
+        this.animationFrameColCount = this.subTextureWidth / this.pixelWidth;
+        this.animationFrameRowCount = this.subTextureHeight / this.pixelHeight;
+        this.animationFrameCount = this.animationFrameColCount * this.animationFrameRowCount;
+        if(this.animationFrameCount <= 0)
+        {
+            this.animationFrameCount = 1;
+            this.animationFrameColCount = 1;
+            this.animationFrameRowCount = 1;
+        }
+        this.setAnimationFrame(0);
+    }
+
+
+    public void playAnimation(HashMap<String,Object> options)
+    {
+        this.animationFrameStart = options.get("start") != null ? GLEntity.propertyToInt(options.get("start")) : 0;
+        this.animationFrameEnd = options.get("end") != null ? GLEntity.propertyToInt(options.get("end")) : this.animationFrameCount - 1;
+        this.animationDuration = options.get("duration") != null ? GLEntity.propertyToInt(options.get("duration")) : 1000;
+        this.animationLoop = options.get("loop") != null ? GLEntity.propertyToInt(options.get("loop")) : 1;
+        this.animationPingPong = options.get("pingpong") != null ? GLEntity.propertyToBoolean(options.get("pingpong")) : false;
+        this.animationStartTime = System.currentTimeMillis();  
+    }
+
+
+    public void updateAnimationFrame()
+    {
+        if(this.animationStartTime == 0)
+        {
+            return;
+        }
+
+        int frameCount = Math.abs(this.animationFrameEnd - this.animationFrameStart) + 1;
+        float timePerFrame = this.animationDuration / (float)frameCount;
+        long elapsedTime = System.currentTimeMillis() - this.animationStartTime;
+        int frameIndex = (int) (elapsedTime / timePerFrame);
+
+        int animationFrameStart = this.animationFrameStart;
+        int animationFrameEnd = this.animationFrameEnd;
+
+        if(this.animationPingPong)
+        {
+            int loopFrame = frameIndex % (frameCount - 1);
+            int loopDone = frameIndex / (frameCount - 1);
+            boolean pong = (loopDone%2 != 0);
+
+            if(loopDone >= this.animationLoop * 2 && this.animationLoop != 0)
+            {
+                this.animationStartTime = 0;
+                this.setAnimationFrame(this.animationFrameStart);
+                return;
+            }
+
+            if(pong)
+            {
+                animationFrameStart = this.animationFrameEnd;
+                animationFrameEnd = this.animationFrameStart;
+            }
+
+            if(animationFrameEnd > animationFrameStart )
+            {
+                this.setAnimationFrame(animationFrameStart  + loopFrame);
+            }
+            else
+            {
+                this.setAnimationFrame(animationFrameStart  - loopFrame);
+            }
+            return;
+        }
+
+
+        int loopFrame = frameIndex % frameCount;
+        int loopDone = frameIndex / frameCount;
+        if(loopDone >= this.animationLoop && this.animationLoop != 0)
+        {
+            this.animationStartTime = 0;
+            this.setAnimationFrame(this.animationFrameEnd);
+            return;
+        }
+
+        if(animationFrameEnd > animationFrameStart )
+        {
+            this.setAnimationFrame(animationFrameStart  + loopFrame);
+        }
+        else
+        {
+            this.setAnimationFrame(animationFrameStart  - loopFrame);
+        }
+        return;
+    }
+    
+
+    /*
+     * Return an unique identifier for this sprite material/draw
+     *  could be a combinaison of texture, opacity, effects, layer number, etc...
+     * This identifier is used to know wich entities/sprite can be drawn together
      */
     @Override
     public int getMaterialUid()
@@ -157,24 +283,29 @@ public class GLSprite extends GLEntity
         return Integer.valueOf(this.textureHandle);
     }
 
-    public GLSprite setFrame(int spriteNum)
+    public void setAnimationFrame(int animationFrame)
     {
-      
-        if(spriteNum < 0 )
+        if(animationFrame == this.animationFrame)
         {
-            spriteNum = (-spriteNum);
+            return;
         }
-        spriteNum %= this.frameCount;
+
+        if(animationFrame < 0 )
+        {
+            animationFrame = (-animationFrame);
+        }
+        animationFrame %= this.animationFrameCount;
+
+        this.animationFrame = animationFrame ;
         
-        int spriteCol = spriteNum % this.spriteColCount;
-        int spriteRow = spriteNum / this.spriteColCount;
+        int frameCol = this.animationFrame % this.animationFrameColCount;
+        int frameRow = this.animationFrame / this.animationFrameColCount;
 
-        float left = (spriteCol * this.width) / this.textureWidth;
-        float top = (spriteRow * this.height) / this.textureHeight;
+        float left = (frameCol * this.pixelWidth);
+        float top = (frameRow * this.pixelHeight);
 
-        this.setUvs(left, top, this.width / this.textureWidth, this.height / this.textureHeight);
+        this.setUvs((this.subTextureLeft + left) / (float)this.textureWidth, (top + this.subTextureTop) / (float)this.textureHeight, this.pixelWidth / (float)this.textureWidth, this.pixelHeight / (float)this.textureHeight);
 
-        return this;
     }
 
     public GLSprite setSize(float width, float height)
@@ -243,6 +374,7 @@ public class GLSprite extends GLEntity
         {
             this.textureHandle = GLTextureCache.create(this.options);
         }
+        this.updateAnimationFrame();
     }
     
 

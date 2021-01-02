@@ -1,8 +1,8 @@
 /*
 *	© Copyright DzzD, Bruno Augier 2013-2021 (bruno.augier@dzzd.net)
-*	This file is part of TIGL.
+*	 This file is part of TIGL.
 *
-*   TIGL is free software: you can redistribute it and/or modify
+*    TIGL is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
 *    the Free Software Foundation, either version 3 of the License, or
 *    (at your option) any later version.
@@ -178,6 +178,13 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
 		glEntity.px = px;
 		glEntity.py = py;
+	}
+	
+	@Kroll.method
+	public void playEntityAnimationById(int id, KrollDict options)
+	{
+		GLSprite glSprite = (GLSprite) this.tiglView.getScene().getEntityById(id);
+		glSprite.playAnimation(options);
 	}
 
 

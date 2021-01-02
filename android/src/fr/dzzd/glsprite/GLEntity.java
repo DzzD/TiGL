@@ -1,11 +1,11 @@
 /*
 *	© Copyright DzzD, Bruno Augier 2013-2021 (bruno.augier@dzzd.net)
-*	This file is part of TIGL.
+*	 This file is part of TIGL.
 *
-*   TIGL is free software: you can redistribute it and/or modify
+*    TIGL is free software: you can redistribute it and/or modify
 *    it under the terms of the GNU General Public License as published by
 *    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
+*    any later version.
 *
 *    TIGL is distributed in the hope that it will be useful,
 *    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -163,6 +163,45 @@ public class GLEntity
         }
 
         return 0;
+
+    }
+
+    
+    public static boolean propertyToBoolean(Object obj)
+    {
+
+        if(obj == null)
+        {
+            return false;
+        }
+
+        
+        if(obj instanceof Boolean)
+        {
+            return (boolean)obj;
+        }
+
+        if(obj instanceof Double)
+        {
+            return ((Double)obj) != 0;
+        }
+
+        if(obj instanceof Float)
+        {
+            return ((Float)obj) != 0;
+        }
+
+        if(obj instanceof Integer)
+        {
+            return ((Integer)obj) != 0;
+        }
+
+        if(obj instanceof String)
+        {
+            return Boolean.parseBoolean((String)obj);
+        }
+
+        return false;
 
     }
 
