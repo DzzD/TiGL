@@ -176,7 +176,7 @@ public class GLSprite extends GLEntity
     }
 
     /*
-     * @todo : move everything about animation to GLEntity
+     * @todo : move everything about animation to GLEntity or create class animation
      */
     private void computeAnimationFrames()
     {

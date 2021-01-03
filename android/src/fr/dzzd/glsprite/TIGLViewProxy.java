@@ -71,8 +71,13 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	@Override
 	public void handleCreationDict(KrollDict options)
 	{
-		//super.handleCreationDict(options); //Should not be called
-
+		Object backgroundcolor = options.get("backgroundcolor");
+		Object backgroundColor = options.get("backgroundColor");
+		options.remove("backgroundcolor");
+		options.remove("backgroundColor");
+		super.handleCreationDict(options); //Should not be called with backgroundcolor
+		if(backgroundcolor != null)	options.put("backgroundcolor",backgroundcolor);
+		if(backgroundColor != null) options.put("backgroundColor",backgroundColor);
 
 		if (options.containsKey("units")) 
 		{
@@ -220,40 +225,45 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	{
 		//ArrayList<GLEntity> flattenedEntities = new ArrayList<GLEntity>();
 		//this.tiglView.getScene().getFlattenedEntities(flattenedEntities);
-		return;
-		/*
+		//return;
+		
 		for(int n = 0; n < count; n++)
 		{
 
-			GLEntity glEntity =  this.tiglView.getScene().getChildAt(index[n]);
+			GLEntity glEntity =  this.tiglView.getScene().getEntityById(index[n]);
 			glEntity.x=x[n];
 			glEntity.y=y[n];
 		}
-		*/
+		
 	}
 
 	/*
 	 * Set position for a list of entities
 	 * 
 	 * We use Explicit conversion because Implicit (see https://github.com/appcelerator/titanium_mobile/blob/07592855ee22082c16f25f94155f3c759ba477c5/android/titanium/src/java/org/appcelerator/titanium/util/TiConvert.java)
-     *  créate un unecessary array, also explicit conversion enable mixing int and float
+     *  créate an unecessary array, also explicit conversion enable mixing int and float
 	 */
 	
     @Kroll.method
-	public void setEntityPosPacked(int[] r)//, float r, float sx, float sy, float px, float py)
+	public void setEntityPosPacked(int[] datas)//, float r, float sx, float sy, float px, float py)
 	{
 		//ArrayList<GLEntity> flattenedEntities = new ArrayList<GLEntity>();
 		//this.tiglView.getScene().getFlattenedEntities(flattenedEntities);
 
 		//int[] r = TiConvert.toIntArray((Object[])packPosXY[0]);
 		//Object[] r = (Object[])packPosXY[0];
-		for(int n = 0; n < r.length; n+=2)
+		GLScene scene = this.tiglView.getScene();
+		HashMap<Integer,GLEntity> entities= scene.getEntities();
+		//synchronized(entities)
 		{
-			int id=r[n];
-			int packedPosXY=r[n+1];
-			GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
-			glEntity.x=((packedPosXY >> 16) & 0xFFFF) - 32768;
-			glEntity.y=(packedPosXY &0xFFFF) - 32768;
+			for(int n = 0; n < datas.length; n+=2)
+			{
+				int id=datas[n];
+				int packedPosXY=datas[n+1];
+				GLEntity glEntity =  entities.get(id);
+				glEntity.x=((packedPosXY >> 16) & 0xFFFF) - 32768;
+				glEntity.y=(packedPosXY &0xFFFF) - 32768;
+			}
 		}
 		
 	}
