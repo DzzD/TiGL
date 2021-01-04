@@ -20,7 +20,7 @@
 /* 
 * Conversion of parameters (see https://github.com/appcelerator/titanium_mobile/blob/07592855ee22082c16f25f94155f3c759ba477c5/android/titanium/src/java/org/appcelerator/titanium/util/TiConvert.java)
 */
-package fr.dzzd.glsprite;
+package fr.dzzd.tigl;
 
 
 import java.util.HashMap;
@@ -47,8 +47,8 @@ import org.appcelerator.titanium.util.TiConvert;
 import android.app.Activity;
 
 
-// This proxy can be created by calling Glsprite.createTIGLView()
-@Kroll.proxy(creatableInModule=GlspriteModule.class)
+// This proxy can be created by calling Tigl.createTIGLView()
+@Kroll.proxy(creatableInModule=TiglModule.class)
 public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 {
 	// Standard Debugging variables

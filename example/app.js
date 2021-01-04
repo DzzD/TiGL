@@ -20,7 +20,7 @@ win.open();
 /*
  * Create GLSprite module
  */
-var glsprite = require('fr.dzzd.glsprite');
+var glsprite = require('fr.dzzd.tigl');
 Ti.API.info("GLSprite.test", "Module is => " + glsprite);
 
 

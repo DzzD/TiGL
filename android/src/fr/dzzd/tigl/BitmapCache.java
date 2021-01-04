@@ -16,7 +16,7 @@
 *	 along with TIGL.  If not, see <https://www.gnu.org/licenses/>
 */
 
-package fr.dzzd.glsprite;
+package fr.dzzd.tigl;
 
 
 import android.app.Activity;

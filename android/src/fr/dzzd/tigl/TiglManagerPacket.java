@@ -16,16 +16,31 @@
 *	 along with TIGL.  If not, see <https://www.gnu.org/licenses/>
 */
 
-package fr.dzzd.glsprite;
+package fr.dzzd.tigl;
 
-
-public interface GLViewListener 
+public class TiglManagerPacket 
 {
+    public static final int POSITIONS_PACKED = 1;
+    public static final int ROTATIONS_PACKED = 2;
+    public static final int SCALES_PACKED = 3;
+    public static final int PIVOTS_PACKED = 4;
 
-    public void onInit();
+    private int type;
+    private Object datas;
+
+    public TiglManagerPacket(int type, Object datas)
+    {
+        this.type = type;
+        this.datas = datas;
+    }
+
+    public int getType()
+    {
+        return this.type;
+    }
     
-    public void onResize(float width, float height, String units);
-    
-    public void onLoop();
-    
+    public Object getDatas()
+    {
+        return this.datas;
+    }
 }

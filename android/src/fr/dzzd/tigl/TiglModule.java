@@ -17,7 +17,7 @@
 */
 
 
-package fr.dzzd.glsprite;
+package fr.dzzd.tigl;
 
 import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
@@ -27,12 +27,12 @@ import org.appcelerator.kroll.common.Log;
 import org.appcelerator.kroll.common.TiConfig;
 
 
-@Kroll.module(name="Glsprite", id="fr.dzzd.glsprite")
-public class GlspriteModule extends KrollModule
+@Kroll.module(name="Tigl", id="fr.dzzd.tigl")
+public class TiglModule extends KrollModule
 {
 
 	// Standard Debugging variables
-	private static final String LCAT = "GlspriteModule";
+	private static final String LCAT = "TiglModule";
 	private static final boolean DBG = TiConfig.LOGD;
 
 
@@ -40,7 +40,7 @@ public class GlspriteModule extends KrollModule
 	// You can define constants with @Kroll.constant, for example:
 	// @Kroll.constant public static final String EXTERNAL_NAME = value;
 
-	public GlspriteModule()
+	public TiglModule()
 	{
 		super();
 	}
