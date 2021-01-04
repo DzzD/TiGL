@@ -17,6 +17,9 @@
 */
 
 
+/* 
+* Conversion of parameters (see https://github.com/appcelerator/titanium_mobile/blob/07592855ee22082c16f25f94155f3c759ba477c5/android/titanium/src/java/org/appcelerator/titanium/util/TiConvert.java)
+*/
 package fr.dzzd.glsprite;
 
 
@@ -24,6 +27,7 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.LinkedList;
 
 import org.appcelerator.kroll.KrollFunction;
 import org.appcelerator.kroll.KrollObject;
@@ -54,6 +58,8 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	private String backgroundColor = "white";
 	private String units = "px";
 	private TIGLView tiglView;
+
+	private LinkedList<TiglManagerPacket> tiglManagerPackets = new LinkedList<TiglManagerPacket>();
 
 
 	@Override
@@ -130,6 +136,7 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	 * */
     public void onLoop()
     {
+		this.processTiglManagerPackets();
 		this.fireEvent("loop", new Object());
 	}
 
@@ -150,6 +157,77 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	{
 		this.tiglView.getGLView().onResume();
 	}
+
+	private void processTiglManagerPackets()
+	{
+		GLScene scene = this.tiglView.getScene();
+		HashMap<Integer,GLEntity> entities= scene.getEntities();
+		while(!this.tiglManagerPackets.isEmpty())
+		{
+			TiglManagerPacket packet = this.tiglManagerPackets.removeFirst();
+			
+			switch(packet.getType())
+			{
+				case TiglManagerPacket.POSITIONS_PACKED :
+				{
+					int[] datas = (int[]) packet.getDatas();
+					for(int n = 0; n < datas.length; n+=2)
+					{
+						int id=datas[n];
+						int packed=datas[n+1];
+						GLEntity glEntity =  entities.get(id);
+						glEntity.x=((packed >> 16) & 0xFFFF) - 32768;
+						glEntity.y=(packed &0xFFFF) - 32768;
+					}
+				}
+				break;
+				
+				case TiglManagerPacket.ROTATIONS_PACKED :
+				{
+					int[] datas = (int[]) packet.getDatas();
+					for(int n = 0; n < datas.length; n+=2)
+					{
+						int id=datas[n];
+						int packed=datas[n+1];
+						GLEntity glEntity =  entities.get(id);
+						glEntity.r= packed * 360.0f / 0x1000000;
+					}
+				}				
+				break;
+
+				case TiglManagerPacket.SCALES_PACKED :
+				{
+					int[] datas = (int[]) packet.getDatas();
+					for(int n = 0; n < datas.length; n+=3)
+					{
+						int id=datas[n];
+						int scaleX=datas[n+1];
+						int scaleY=datas[n+2];
+						GLEntity glEntity =  entities.get(id);
+						glEntity.sx= scaleX / 10000f;
+						glEntity.sy= scaleY / 10000f;
+					}
+				}
+				break;
+				
+				case TiglManagerPacket.PIVOTS_PACKED :
+				{
+					int[] datas = (int[]) packet.getDatas();
+					for(int n = 0; n < datas.length; n+=2)
+					{
+						int id=datas[n];
+						int packed=datas[n+1];
+						GLEntity glEntity =  entities.get(id);
+						glEntity.px=((packed >> 16) & 0xFFFF) - 32768;
+						glEntity.py=(packed &0xFFFF) - 32768;
+					}
+				}
+				break;
+			}
+		}
+	}
+	
+		
 
 	
 	@Kroll.method
@@ -220,53 +298,48 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		Log.i("TIGL", " TIGLViewProxy Wakeup");
 	}
 	
-	@Kroll.method
-	public void setEntityPos(int index[], float x[], float y[], int count)//, float r, float sx, float sy, float px, float py)
-	{
-		//ArrayList<GLEntity> flattenedEntities = new ArrayList<GLEntity>();
-		//this.tiglView.getScene().getFlattenedEntities(flattenedEntities);
-		//return;
-		
-		for(int n = 0; n < count; n++)
-		{
 
-			GLEntity glEntity =  this.tiglView.getScene().getEntityById(index[n]);
-			glEntity.x=x[n];
-			glEntity.y=y[n];
-		}
-		
+	/*
+	 * Receive packets of positions and add it to tiglManagerPackets
+	 *  => datas will be processed on the beginning of the next loop
+	 */
+    @Kroll.method
+	public void setEntitiesPositionsPacked(int[] datas)
+	{
+		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.POSITIONS_PACKED, datas));	
+	}
+	
+	/*
+	 * Receive packets of rotations and add it to tiglManagerPackets
+	 *  => datas will be processed on the beginning of the next loop
+	 */
+    @Kroll.method
+	public void setEntitiesRotationsPacked(int[] datas)
+	{
+		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.ROTATIONS_PACKED, datas));	
+	}
+
+	
+	/*
+	 * Receive packets of scales and add it to tiglManagerPackets
+	 *  => datas will be processed on the beginning of the next loop
+	 */
+    @Kroll.method
+	public void setEntitiesScalesPacked(int[] datas)
+	{
+		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.SCALES_PACKED, datas));	
 	}
 
 	/*
-	 * Set position for a list of entities
-	 * 
-	 * We use Explicit conversion because Implicit (see https://github.com/appcelerator/titanium_mobile/blob/07592855ee22082c16f25f94155f3c759ba477c5/android/titanium/src/java/org/appcelerator/titanium/util/TiConvert.java)
-     *  créate an unecessary array, also explicit conversion enable mixing int and float
+	 * Receive packets of pivots and add it to tiglManagerPackets
+	 *  => datas will be processed on the beginning of the next loop
 	 */
-	
     @Kroll.method
-	public void setEntityPosPacked(int[] datas)//, float r, float sx, float sy, float px, float py)
+	public void setEntitiesPivotsPacked(int[] datas)
 	{
-		//ArrayList<GLEntity> flattenedEntities = new ArrayList<GLEntity>();
-		//this.tiglView.getScene().getFlattenedEntities(flattenedEntities);
-
-		//int[] r = TiConvert.toIntArray((Object[])packPosXY[0]);
-		//Object[] r = (Object[])packPosXY[0];
-		GLScene scene = this.tiglView.getScene();
-		HashMap<Integer,GLEntity> entities= scene.getEntities();
-		//synchronized(entities)
-		{
-			for(int n = 0; n < datas.length; n+=2)
-			{
-				int id=datas[n];
-				int packedPosXY=datas[n+1];
-				GLEntity glEntity =  entities.get(id);
-				glEntity.x=((packedPosXY >> 16) & 0xFFFF) - 32768;
-				glEntity.y=(packedPosXY &0xFFFF) - 32768;
-			}
-		}
-		
+		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.PIVOTS_PACKED, datas));	
 	}
+
 
 
 	@Kroll.method
