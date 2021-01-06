@@ -30,6 +30,7 @@ public class GLScene extends GLEntity
     private boolean batchRenderingMode;
     private ArrayList<GLEntity> flattenedEntities;
     private HashMap<Integer,GLEntity> entities;
+    public int currentDrawCount;
 
     public GLScene()
     {
@@ -60,6 +61,7 @@ public class GLScene extends GLEntity
     public void draw()
     {        
        
+        this.currentDrawCount = 0;
         this.flattenedEntities.clear();
         this.flattenedEntities.ensureCapacity(this.entities.size());
         synchronized(this.entities)

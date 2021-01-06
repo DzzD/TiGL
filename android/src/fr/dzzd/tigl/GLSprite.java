@@ -389,6 +389,7 @@ public class GLSprite extends GLEntity
         vbuff.put(verts, 0, 8);
         vbuff.rewind();
         GLShader.drawTexture(vbuff, this.uvsBuffer, this.textureHandle, 1, true);
+        this.lastDrawOrder = this.getScene().currentDrawCount++;
     }
 /*
     private void computeVertices(int startIndex, int count)
@@ -439,6 +440,7 @@ public class GLSprite extends GLEntity
         while (childIterator.hasNext()) 
         {
             GLSprite sprite = (GLSprite)childIterator.next();
+            sprite.lastDrawOrder = sprite.getScene().currentDrawCount++;
             int vIndex = entityCount * 2 * 6;
             sprite.matrix.mapPoints(verts, vIndex, sprite.vertices, 0, 4);
             verts[vIndex + 8 ] = verts[vIndex + 0 ];

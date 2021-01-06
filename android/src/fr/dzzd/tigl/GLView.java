@@ -224,12 +224,14 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
          * For each touch enabled entity compute local coordinates and launch event
          * */
         HashMap<Integer,GLEntity> entities= this.scene.getEntities();
+        int entityDrawOrder = -1;
+        GLTouchEvent glTouchEvent = new GLTouchEvent();
 
         for (Map.Entry<Integer, GLEntity> entityMap : entities.entrySet()) 
         {
             GLEntity entity = entityMap.getValue();
 
-            if(!entity.touchEnabled)
+            if(!entity.touchEnabled || entity.lastDrawOrder < entityDrawOrder)
             {
                 continue;
             }
@@ -245,7 +247,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
             }
 
             // Log.i("TIGL", "*******************");
-            GLTouchEvent glTouchEvent = new GLTouchEvent();
+            //GLTouchEvent glTouchEvent = new GLTouchEvent();
             glTouchEvent.action = action; 
             glTouchEvent.pointer = pointerId;
             glTouchEvent.sceneX = sceneX;
@@ -253,6 +255,10 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
             glTouchEvent.x = xy[0];
             glTouchEvent.y = xy[1];
             glTouchEvent.entityId = entity.id;
+            entityDrawOrder = entity.lastDrawOrder;
+        }
+        if(entityDrawOrder != -1)
+        {
             this.glViewListener.onTouch(glTouchEvent);
         }
 

@@ -80,9 +80,14 @@ public class GLEntity
     public float height;
 
     /*
-     * TouchEnabled (true if touch listener may be added to this enitity)
+     * TouchEnabled (set true if touch listener may be added to this entity)
      */
     public boolean touchEnabled;
+
+    /*
+     * When scene is rendered this is populated with the order of drawing (lowers are the ones that was drawn first)
+     */
+    public int lastDrawOrder;
 
     /*
      * Children list
@@ -285,7 +290,12 @@ public class GLEntity
     public synchronized void remove(GLEntity glEntity)
     {
         this.childs.remove(glEntity);
-        this.getScene().getEntities().remove(glEntity.id);
+        glEntity.parent = null;
+        HashMap<Integer,GLEntity> entities = this.getScene().getEntities();
+        synchronized(entities)
+        {
+            entities.remove(glEntity.id);
+        }
     }
 
     
@@ -296,6 +306,7 @@ public class GLEntity
      */
     public synchronized void add(GLEntity glEntity)
     {
+        glEntity.parent = this;
         this.childs.add(glEntity);
         HashMap<Integer,GLEntity> entities = this.getScene().getEntities();
         synchronized(entities)
