@@ -373,7 +373,10 @@ public class GLSprite extends GLEntity
     
 
     static int tmpBufferCapacity = 1;
+    //static GLSprite[] sprts = new GLSprite[tmpBufferCapacity];
     static float[] verts= new float[6 * 2 * tmpBufferCapacity];
+    static float[] uvst= new float[6 * 2 * tmpBufferCapacity];
+    // static float[] uvsCached= new float[6 * 2 * tmpBufferCapacity];
     static FloatBuffer uvsb = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
     static FloatBuffer vbuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
@@ -387,71 +390,90 @@ public class GLSprite extends GLEntity
         vbuff.rewind();
         GLShader.drawTexture(vbuff, this.uvsBuffer, this.textureHandle, 1, true);
     }
-    
+/*
+    private void computeVertices(int startIndex, int count)
+    {
+        for(int index = 0; index < count; index++)
+        {
+            GLSprite sprite = sprts[startIndex + index];
+            int vIndex =  (startIndex + index) * 2 * 6;
+            sprite.matrix.mapPoints(verts, vIndex, sprite.vertices, 0, 4);
+            verts[vIndex + 8 ] = verts[vIndex + 0 ];
+            verts[vIndex + 9 ] = verts[vIndex + 1 ];
+            verts[vIndex + 10 ] = verts[vIndex + 4 ];
+            verts[vIndex + 11 ] = verts[vIndex + 5 ];
+
+            uvst[vIndex] = sprite.uvs[0];
+            uvst[vIndex+1] = sprite.uvs[1];
+            uvst[vIndex+2] = sprite.uvs[2];
+            uvst[vIndex+3] = sprite.uvs[3];
+            uvst[vIndex+4] = sprite.uvs[4];
+            uvst[vIndex+5] = sprite.uvs[5];
+            uvst[vIndex+6] = sprite.uvs[6];
+            uvst[vIndex+7] = sprite.uvs[7];
+            uvst[vIndex+8] = sprite.uvs[0];
+            uvst[vIndex+9] = sprite.uvs[1];
+            uvst[vIndex+10] = sprite.uvs[4];
+            uvst[vIndex+11] = sprite.uvs[5];
+        }
+    }
+    */
     @Override
     public void drawBatch(ArrayList<GLEntity> entities)
     {
         if(tmpBufferCapacity<entities.size())
         {
             tmpBufferCapacity = entities.size() + 1000;
+           // sprts = new GLSprite[tmpBufferCapacity];
             Log.i("TIGL", "GLSprite : increase draw buffer size to " + tmpBufferCapacity);
             verts= new float[6 * 2 * tmpBufferCapacity];
+            uvst= new float[6 * 2 * tmpBufferCapacity];
+            // uvsCached= new float[6 * 2 * tmpBufferCapacity];
             uvsb = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
             vbuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
         uvsb.clear();
-        int count = 0;
-        //for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
+        int entityCount = 0;
         Iterator<GLEntity> childIterator = entities.iterator();
         while (childIterator.hasNext()) 
         {
             GLSprite sprite = (GLSprite)childIterator.next();
-            sprite.matrix.mapPoints(verts, count * 2 * 6, sprite.vertices, 0, 4);
-            verts[count * 2 * 6 + 8 ] = verts[count * 2 * 6 + 0 ];
-            verts[count * 2 * 6 + 9 ] = verts[count * 2 * 6 + 1 ];
-            verts[count * 2 * 6 + 10 ] = verts[count * 2 * 6 + 4 ];
-            verts[count * 2 * 6 + 11 ] = verts[count * 2 * 6 + 5 ];
+            int vIndex = entityCount * 2 * 6;
+            sprite.matrix.mapPoints(verts, vIndex, sprite.vertices, 0, 4);
+            verts[vIndex + 8 ] = verts[vIndex + 0 ];
+            verts[vIndex + 9 ] = verts[vIndex + 1 ];
+            verts[vIndex + 10 ] = verts[vIndex + 4 ];
+            verts[vIndex + 11 ] = verts[vIndex + 5 ];
 
-            sprite.uvsBuffer.position(0);
-            uvsb.put(sprite.uvsBuffer);
-            uvsb.put(sprite.uvs[0]);
-            uvsb.put(sprite.uvs[1]);
-            uvsb.put(sprite.uvs[4]);
-            uvsb.put(sprite.uvs[5]);
-
-            
-            count++;
-            
+            uvst[vIndex] = sprite.uvs[0];
+            uvst[vIndex+1] = sprite.uvs[1];
+            uvst[vIndex+2] = sprite.uvs[2];
+            uvst[vIndex+3] = sprite.uvs[3];
+            uvst[vIndex+4] = sprite.uvs[4];
+            uvst[vIndex+5] = sprite.uvs[5];
+            uvst[vIndex+6] = sprite.uvs[6];
+            uvst[vIndex+7] = sprite.uvs[7];
+            uvst[vIndex+8] = sprite.uvs[0];
+            uvst[vIndex+9] = sprite.uvs[1];
+            uvst[vIndex+10] = sprite.uvs[4];
+            uvst[vIndex+11] = sprite.uvs[5];
+            entityCount++;
         }
+           
+        
       
 
         vbuff.clear();
-        vbuff.put(verts, 0, count * 12);
-        vbuff.rewind();
-        uvsb.position(0);
-        GLShader.drawTexture(vbuff, uvsb, this.textureHandle, count, false);
-
-
-        /*
-        FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(entities.size() * this.vertices.length * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        this.vertexBuffer.position(0); 
-        this.vertexBuffer.put()
-        */
-
-        /*
-        FloatBuffer vertexBuffer = ByteBuffer.allocateDirect(entities.size() * 6 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-        FloatBuffer uvsBuffer = ByteBuffer.allocateDirect(entities.size() * 6 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
-
-        for (Vector<GLEntity> e = entities.elements(); e.hasMoreElements();)
-        {
-            Vector<GLEntity> entity = e.nextElement();
-            
-        }
-
+        vbuff.put(verts, 0, entityCount * 12);
+        vbuff.flip();
         
-        GLShader.drawTextureBatch(vertexBuffer, uvsBuffer, entities.size(), this.textureHandle);
-        */
+        uvsb.clear();
+        uvsb.put(uvst, 0, entityCount * 12);
+        uvsb.flip();
+
+        GLShader.drawTexture(vbuff, uvsb, this.textureHandle, entityCount, false);
+
     }
     
 
