@@ -34,6 +34,7 @@ public class GLScene extends GLEntity
     public GLScene()
     {
         super(new HashMap<String,Object>());
+        this.touchEnabled = true;
         this.type = GL_SCENE;
         this.batchRenderingMode = true;
         this.flattenedEntities = new ArrayList<GLEntity>();
@@ -61,9 +62,12 @@ public class GLScene extends GLEntity
        
         this.flattenedEntities.clear();
         this.flattenedEntities.ensureCapacity(this.entities.size());
-        for (Map.Entry<Integer, GLEntity> entity : this.entities.entrySet()) 
+        synchronized(this.entities)
         {
-            this.flattenedEntities.add(entity.getValue());
+            for (Map.Entry<Integer, GLEntity> entity : this.entities.entrySet()) 
+            {
+                this.flattenedEntities.add(entity.getValue());
+            }
         }
         
 

@@ -44,10 +44,6 @@ public class GLSprite extends GLEntity
     public FloatBuffer vertexBuffer;
     public FloatBuffer uvsBuffer;
 
-    private float width;
-    private float height;
-
-    
     private int pixelWidth;
     private int pixelHeight;
 
@@ -92,8 +88,6 @@ public class GLSprite extends GLEntity
     {
         super(options);
         this.type = GL_SPRITE;
-        this.width = options.get("width") != null ? GLEntity.propertyToFloat(options.get("width")) : -1;
-        this.height = options.get("height") != null ? GLEntity.propertyToFloat(options.get("height")) : -1;
         this.pixelWidth = options.get("pixelWidth") != null ? GLEntity.propertyToInt(options.get("pixelWidth")) : -1;
         this.pixelHeight = options.get("pixelHeight") != null ? GLEntity.propertyToInt(options.get("pixelHeight")) : -1;
         this.subTextureWidth = options.get("subTextureWidth") != null ? GLEntity.propertyToInt(options.get("subTextureWidth")) : -1;

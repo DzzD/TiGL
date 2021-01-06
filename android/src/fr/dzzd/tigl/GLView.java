@@ -35,6 +35,9 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.opengl.GLSurfaceView;
 import android.graphics.Color;
+import android.view.MotionEvent;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLViewListener
 {
@@ -100,6 +103,12 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         
     }
 
+    public void onTouch(GLTouchEvent glTouchEvent)
+    {
+        
+    }
+    
+
     public void setGLViewListener(GLViewListener glViewListener)
     {
         this.glViewListener = glViewListener;
@@ -133,6 +142,122 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         Log.i("TIGL", "GLView - Units modified to " + this.units + " Units ratio is " + this.unitsRatio + " dpi is " + this.screenDpi);
     }
 
+    
+    float xy[] = new float[2];
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) 
+    {
+        
+
+        int pointerIndex = e.getActionIndex();
+        int pointerId = e.getPointerId(pointerIndex);
+
+        //get masked (not specific to a pointer) action
+        int actionId = e.getActionMasked();
+ 
+        float x = e.getX(pointerIndex);
+        float y = e.getY(pointerIndex);
+
+        /* 
+         * Normalize coordinate to OpenGL
+         */
+        x = 2f * x / this.width - 1f;
+        y = 1f - 2f * y / this.height ;
+
+        /*
+         * Compute scene position
+         */
+        xy[0] = x;
+        xy[1] = y;
+        this.scene.matrixInvert.mapPoints(xy);
+        float sceneX = xy[0];
+        float sceneY = xy[1];
+
+
+        //Log.i("TIGL", "GLView MotionEvent (" + xy[0] + "," + xy[1] +")");
+
+        int action = -1;
+        switch (actionId) 
+        {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_POINTER_DOWN:
+                //Log.i("TIGL", "GLView MotionEvent.ACTION_DOWN P" + pointerId);
+                action = GLTouchEvent.ACTION_DOWN;
+            break;
+            case MotionEvent.ACTION_MOVE:
+                //Log.i("TIGL", "GLView MotionEvent.ACTION_MOVE P" + pointerId);
+                action = GLTouchEvent.ACTION_MOVE;
+            break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_POINTER_UP:
+                //Log.i("TIGL", "GLView MotionEvent.ACTION_UP P" + pointerId);
+                action = GLTouchEvent.ACTION_UP;
+            break;
+            case MotionEvent.ACTION_CANCEL:
+                //Log.i("TIGL", "GLView MotionEvent.ACTION_CANCEL P" + pointerId);
+                action = GLTouchEvent.ACTION_CANCEL;
+            break;
+    
+        }
+
+        /*
+         * Do an event for the scene as it is always touched
+         * */
+        if(this.scene.touchEnabled)
+        {
+            GLTouchEvent glTouchEvent = new GLTouchEvent();
+            glTouchEvent.action = action; 
+            glTouchEvent.pointer = pointerId;
+            glTouchEvent.sceneX = sceneX;
+            glTouchEvent.sceneY = sceneY;
+            glTouchEvent.x = sceneX;
+            glTouchEvent.y = sceneY;
+            glTouchEvent.entityId = this.scene.id;
+            this.glViewListener.onTouch(glTouchEvent);
+        }
+
+
+
+        
+        /*
+         * For each touch enabled entity compute local coordinates and launch event
+         * */
+        HashMap<Integer,GLEntity> entities= this.scene.getEntities();
+
+        for (Map.Entry<Integer, GLEntity> entityMap : entities.entrySet()) 
+        {
+            GLEntity entity = entityMap.getValue();
+
+            if(!entity.touchEnabled)
+            {
+                continue;
+            }
+
+            xy[0] = x;
+            xy[1] = y;
+            entity.matrixInvert.mapPoints(xy);
+            
+            // Log.i("TIGL", "GLView MotionEvent (" + xy[0] + "," + xy[1] +")");
+            if(xy[0] < 0 || xy[0] > entity.width || xy[1] < 0 || xy[1] > entity.height)
+            {
+                continue;
+            }
+
+            // Log.i("TIGL", "*******************");
+            GLTouchEvent glTouchEvent = new GLTouchEvent();
+            glTouchEvent.action = action; 
+            glTouchEvent.pointer = pointerId;
+            glTouchEvent.sceneX = sceneX;
+            glTouchEvent.sceneY = sceneY;
+            glTouchEvent.x = xy[0];
+            glTouchEvent.y = xy[1];
+            glTouchEvent.entityId = entity.id;
+            this.glViewListener.onTouch(glTouchEvent);
+        }
+
+        return true;
+    }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config)
@@ -145,6 +270,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         GLShader.initShaders();
         BitmapCache.clear();
         GLTextureCache.clear();
+        GLEntity.resetUid();
         this.scene = new GLScene();
         this.fpsFrameCount = 0;
         this.fpsTime = System.nanoTime();
@@ -165,11 +291,12 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) 
     {
+
         if(!this.isCurrentContext())
         {
             Log.i("TIGL", "GLView - NO CURRENT CONTEXT EGL(onSurfaceChanged)");
         }
-
+        Log.i("TIGL", "GLView - onSurfaceChanged(" + width + "," + height + ")");
         this.width = width;
         this.height = height;
         this.glViewListener.onResize(width  / this.unitsRatio, height  / this.unitsRatio, this.units);
@@ -250,10 +377,10 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
             javascriptTimeBd.setScale(2, BigDecimal.ROUND_HALF_UP);
             matrixTimeBd.setScale(2, BigDecimal.ROUND_HALF_UP);
             fpsBd.setScale(2, BigDecimal.ROUND_HALF_UP);
-            Log.i("TIGL", "GLRenderer (time/frame)  OpenGL: " + df.format(openglTimeBd) + " ms");
-            Log.i("TIGL", "GLRenderer (time/frame)  JavaScript: " + df.format(javascriptTimeBd) + " ms");
-            Log.i("TIGL", "GLRenderer (time/frame)  Matrices: " + df.format(matrixTimeBd) + " ms");
-            Log.i("TIGL", "GLRenderer Framerate: " + df.format(fpsBd) + " FPS");
+            Log.i("TIGL", "GLView average time per frame for OpenGL (wait and draw) : " + df.format(openglTimeBd) + " ms");
+            Log.i("TIGL", "GLView average time per frame for JavaScript events call and eceived datas process : " + df.format(javascriptTimeBd) + " ms");
+            Log.i("TIGL", "GLView average time per frame for Matrices compute: " + df.format(matrixTimeBd) + " ms");
+            Log.i("TIGL", "GLView Framerate: " + df.format(fpsBd) + " FPS");
             frameCount = 0;
             oglTime = 0;
             jsTime = 0;

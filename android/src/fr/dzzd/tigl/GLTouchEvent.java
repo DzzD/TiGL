@@ -18,15 +18,24 @@
 
 package fr.dzzd.tigl;
 
+import android.view.MotionEvent;
 
-public interface GLViewListener 
+public class GLTouchEvent 
 {
+    public static final int ACTION_DOWN  = 0;
+    public static final int ACTION_MOVE  = 1;
+    public static final int ACTION_UP  = 2;
+    public static final int ACTION_CANCEL  = 3;
+    public int action;
+    public int pointer;
+    public float x;
+    public float y;
+    public float sceneX;
+    public float sceneY;
+    public int entityId;
 
-    public void onInit();
+    public GLTouchEvent()
+    {
+    }
     
-    public void onResize(float width, float height, String units);
-    
-    public void onLoop();
-    
-    public void onTouch(GLTouchEvent glTouchEvent);
 }

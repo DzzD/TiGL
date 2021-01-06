@@ -67,10 +67,22 @@ public class GLEntity
     public float sx;
     public float sy;
 
+
     /*
      * Rotation (centered on the pivot)
      */
     public float r;
+    
+    /*
+     * width and height of this entity
+     */
+    public float width;
+    public float height;
+
+    /*
+     * TouchEnabled (true if touch listener may be added to this enitity)
+     */
+    public boolean touchEnabled;
 
     /*
      * Children list
@@ -88,6 +100,7 @@ public class GLEntity
      * It is also used to transform vertices when drawing on screen.
      */
     protected Matrix matrix;
+    protected Matrix matrixInvert;
 
 
     
@@ -95,6 +108,11 @@ public class GLEntity
     public static int getNewUid()
     {
         return GLEntity.idGenerator++;
+    }
+
+    public static int resetUid()
+    {
+        return GLEntity.idGenerator=0;
     }
 
     public static float propertyToFloat(Object obj)
@@ -221,9 +239,13 @@ public class GLEntity
         this.py = options.get("px") != null ? GLEntity.propertyToFloat(options.get("py")) : 0;
         this.sx = options.get("sx") != null ? GLEntity.propertyToFloat(options.get("sx")) : 1;
         this.sy = options.get("sy") != null ? GLEntity.propertyToFloat(options.get("sy")) : 1;
+        this.width = options.get("width") != null ? GLEntity.propertyToFloat(options.get("width")) : -1;
+        this.height = options.get("height") != null ? GLEntity.propertyToFloat(options.get("height")) : -1;
+        this.touchEnabled = options.get("touchEnabled") != null ? GLEntity.propertyToBoolean(options.get("touchEnabled")) : false;
         this.parent= null;
         this.childs = new ArrayList<GLEntity>();
         this.matrix =  new Matrix();
+        this.matrixInvert =  new Matrix();
 /*
         Log.i("TIGL", "GLEntity: x :" + this.x);
         Log.i("TIGL", "GLEntity: y :" + this.y);
@@ -275,7 +297,11 @@ public class GLEntity
     public synchronized void add(GLEntity glEntity)
     {
         this.childs.add(glEntity);
-        this.getScene().getEntities().put(glEntity.id, glEntity);
+        HashMap<Integer,GLEntity> entities = this.getScene().getEntities();
+        synchronized(entities)
+        {
+            entities.put(glEntity.id, glEntity);
+        }
     }
 
        
@@ -373,17 +399,23 @@ public class GLEntity
          * Compute matrix and combine it with its parent's matrix
          */
         this.matrix.reset();
-        //this.matrix.postTranslate(-this.px, -this.py);
         if(this.sx != 1 || this.sy != 1) this.matrix.postScale(this.sx, this.sy, this.px, this.py);
         if(this.r !=0) this.matrix.postRotate(this.r, this.px, this.py);
-        //this.matrix.postTranslate(this.px + this.x, this.py + this.y);
         this.matrix.postTranslate(this.x - this.px, this.y - this.py);
         this.matrix.postConcat(matrix);
+
+
+        /*
+        * (Try to) invert matrix to compute world to object coodinate (for example for touch event)
+        */
+        if(this.touchEnabled)
+        {
+            this.matrix.invert(this.matrixInvert);
+        }
 
         /*
          * Compute all childrens matrix
          */
-        //for (Enumeration<GLEntity> child = this.childs.elements(); child.hasMoreElements();)
         Iterator<GLEntity> childIterator = this.childs.iterator();
         while (childIterator.hasNext()) 
         {

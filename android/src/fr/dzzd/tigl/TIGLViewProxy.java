@@ -138,8 +138,44 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
     {
 		this.processTiglManagerPackets();
 		this.fireEvent("loop", new Object());
+		this.fireEvent("loopFinished", new Object());
 	}
 
+	
+	/*
+	 * GLViewListener callback onTouch
+	 *  fireEvent "touch" to Javascript
+	 * */
+	public void onTouch(GLTouchEvent glTouchEvent)
+	{
+		KrollDict e = new KrollDict();
+		switch(glTouchEvent.action)
+		{
+			case GLTouchEvent.ACTION_DOWN :
+				e.put("action","down");
+			break;
+			case GLTouchEvent.ACTION_MOVE :
+				e.put("action","move");
+			break;
+			case GLTouchEvent.ACTION_UP :
+				e.put("action","up");
+			break;
+			case GLTouchEvent.ACTION_CANCEL :
+				e.put("action","cancel");
+			break;
+			default:
+				e.put("action","unknown");
+			break;
+				
+		}
+		e.put("pointer",glTouchEvent.pointer);
+		e.put("x",glTouchEvent.x);
+		e.put("y",glTouchEvent.y);
+		e.put("sceneX",glTouchEvent.sceneX);
+		e.put("sceneY",glTouchEvent.sceneY);
+		e.put("entityId",glTouchEvent.entityId);
+		this.fireEvent("touch", e);
+	}
 	/* 
 	 * Pause the OpenGL rendering thread
 	 */
@@ -162,67 +198,70 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	{
 		GLScene scene = this.tiglView.getScene();
 		HashMap<Integer,GLEntity> entities= scene.getEntities();
-		while(!this.tiglManagerPackets.isEmpty())
+		synchronized(this.tiglManagerPackets)
 		{
-			TiglManagerPacket packet = this.tiglManagerPackets.removeFirst();
-			
-			switch(packet.getType())
+			while(!this.tiglManagerPackets.isEmpty())
 			{
-				case TiglManagerPacket.POSITIONS_PACKED :
-				{
-					int[] datas = (int[]) packet.getDatas();
-					for(int n = 0; n < datas.length; n+=2)
-					{
-						int id=datas[n];
-						int packed=datas[n+1];
-						GLEntity glEntity =  entities.get(id);
-						glEntity.x=((packed >> 16) & 0xFFFF) - 32768;
-						glEntity.y=(packed &0xFFFF) - 32768;
-					}
-				}
-				break;
+				TiglManagerPacket packet = this.tiglManagerPackets.removeFirst();
 				
-				case TiglManagerPacket.ROTATIONS_PACKED :
+				switch(packet.getType())
 				{
-					int[] datas = (int[]) packet.getDatas();
-					for(int n = 0; n < datas.length; n+=2)
+					case TiglManagerPacket.POSITIONS_PACKED :
 					{
-						int id=datas[n];
-						int packed=datas[n+1];
-						GLEntity glEntity =  entities.get(id);
-						glEntity.r= packed * 360.0f / 0x1000000;
+						int[] datas = (int[]) packet.getDatas();
+						for(int n = 0; n < datas.length; n+=2)
+						{
+							int id=datas[n];
+							int packed=datas[n+1];
+							GLEntity glEntity =  entities.get(id);
+							glEntity.x=((packed >> 16) & 0xFFFF) - 32768;
+							glEntity.y=(packed &0xFFFF) - 32768;
+						}
 					}
-				}				
-				break;
+					break;
+					
+					case TiglManagerPacket.ROTATIONS_PACKED :
+					{
+						int[] datas = (int[]) packet.getDatas();
+						for(int n = 0; n < datas.length; n+=2)
+						{
+							int id=datas[n];
+							int packed=datas[n+1];
+							GLEntity glEntity =  entities.get(id);
+							glEntity.r= packed * 360.0f / 0x1000000;
+						}
+					}				
+					break;
 
-				case TiglManagerPacket.SCALES_PACKED :
-				{
-					int[] datas = (int[]) packet.getDatas();
-					for(int n = 0; n < datas.length; n+=3)
+					case TiglManagerPacket.SCALES_PACKED :
 					{
-						int id=datas[n];
-						int scaleX=datas[n+1];
-						int scaleY=datas[n+2];
-						GLEntity glEntity =  entities.get(id);
-						glEntity.sx= scaleX / 10000f;
-						glEntity.sy= scaleY / 10000f;
+						int[] datas = (int[]) packet.getDatas();
+						for(int n = 0; n < datas.length; n+=3)
+						{
+							int id=datas[n];
+							int scaleX=datas[n+1];
+							int scaleY=datas[n+2];
+							GLEntity glEntity =  entities.get(id);
+							glEntity.sx= scaleX / 10000f;
+							glEntity.sy= scaleY / 10000f;
+						}
 					}
-				}
-				break;
-				
-				case TiglManagerPacket.PIVOTS_PACKED :
-				{
-					int[] datas = (int[]) packet.getDatas();
-					for(int n = 0; n < datas.length; n+=2)
+					break;
+					
+					case TiglManagerPacket.PIVOTS_PACKED :
 					{
-						int id=datas[n];
-						int packed=datas[n+1];
-						GLEntity glEntity =  entities.get(id);
-						glEntity.px=((packed >> 16) & 0xFFFF) - 32768;
-						glEntity.py=(packed &0xFFFF) - 32768;
+						int[] datas = (int[]) packet.getDatas();
+						for(int n = 0; n < datas.length; n+=2)
+						{
+							int id=datas[n];
+							int packed=datas[n+1];
+							GLEntity glEntity =  entities.get(id);
+							glEntity.px=((packed >> 16) & 0xFFFF) - 32768;
+							glEntity.py=(packed &0xFFFF) - 32768;
+						}
 					}
+					break;
 				}
-				break;
 			}
 		}
 	}
@@ -262,6 +301,13 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		glEntity.px = px;
 		glEntity.py = py;
 	}
+
+	@Kroll.method
+	public void setTouchEnabledById(int id, boolean touchEnabled)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
+		glEntity.touchEnabled = touchEnabled;
+	}
 	
 	@Kroll.method
 	public void playEntityAnimationById(int id, KrollDict options)
@@ -292,12 +338,6 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		
 	}
 
-	@Kroll.method
-	public void wakeup() throws Exception
-	{
-		Log.i("TIGL", " TIGLViewProxy Wakeup");
-	}
-	
 
 	/*
 	 * Receive packets of positions and add it to tiglManagerPackets
@@ -306,7 +346,10 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
     @Kroll.method
 	public void setEntitiesPositionsPacked(int[] datas)
 	{
-		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.POSITIONS_PACKED, datas));	
+		synchronized(this.tiglManagerPackets)
+		{
+			this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.POSITIONS_PACKED, datas));	
+		}
 	}
 	
 	/*
@@ -316,7 +359,10 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
     @Kroll.method
 	public void setEntitiesRotationsPacked(int[] datas)
 	{
-		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.ROTATIONS_PACKED, datas));	
+		synchronized(this.tiglManagerPackets)
+		{
+			this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.ROTATIONS_PACKED, datas));	
+		}	
 	}
 
 	
@@ -327,7 +373,10 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
     @Kroll.method
 	public void setEntitiesScalesPacked(int[] datas)
 	{
-		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.SCALES_PACKED, datas));	
+		synchronized(this.tiglManagerPackets)
+		{
+			this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.SCALES_PACKED, datas));		
+		}
 	}
 
 	/*
@@ -337,7 +386,10 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
     @Kroll.method
 	public void setEntitiesPivotsPacked(int[] datas)
 	{
-		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.PIVOTS_PACKED, datas));	
+		synchronized(this.tiglManagerPackets)
+		{
+			this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.PIVOTS_PACKED, datas));		
+		}
 	}
 
 
