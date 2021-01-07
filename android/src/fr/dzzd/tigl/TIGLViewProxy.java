@@ -214,6 +214,7 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 							int id=datas[n];
 							int packed=datas[n+1];
 							GLEntity glEntity =  entities.get(id);
+							if(glEntity == null) continue;
 							glEntity.x=((packed >> 16) & 0xFFFF) - 32768;
 							glEntity.y=(packed &0xFFFF) - 32768;
 						}
@@ -228,6 +229,7 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 							int id=datas[n];
 							int packed=datas[n+1];
 							GLEntity glEntity =  entities.get(id);
+							if(glEntity == null) continue;
 							glEntity.r= packed * 360.0f / 0x1000000;
 						}
 					}				
@@ -242,6 +244,7 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 							int scaleX=datas[n+1];
 							int scaleY=datas[n+2];
 							GLEntity glEntity =  entities.get(id);
+							if(glEntity == null) continue;
 							glEntity.sx= scaleX / 10000f;
 							glEntity.sy= scaleY / 10000f;
 						}
@@ -256,6 +259,7 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 							int id=datas[n];
 							int packed=datas[n+1];
 							GLEntity glEntity =  entities.get(id);
+							if(glEntity == null) continue;
 							glEntity.px=((packed >> 16) & 0xFFFF) - 32768;
 							glEntity.py=(packed &0xFFFF) - 32768;
 						}
@@ -269,6 +273,24 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		
 
 	
+	@Kroll.method
+	public void removeEntityById(int id)
+	{
+		GLScene scene = this.tiglView.getScene();
+		synchronized(scene)
+		{
+			scene.getEntityById(id).remove();
+		}
+	}
+
+	@Kroll.method
+	public void setEntityLayerById(int id, int layer)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
+		glEntity.layer = layer;
+	}
+
+
 	@Kroll.method
 	public void setEntityPositionById(int id, float x, float y)
 	{

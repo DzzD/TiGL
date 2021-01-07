@@ -28,8 +28,11 @@ import java.nio.*;
 public class GLScene extends GLEntity
 {
     private boolean batchRenderingMode;
-    private ArrayList<GLEntity> flattenedEntities;
     private HashMap<Integer,GLEntity> entities;
+    
+    private ArrayList<GLEntity> flattenedEntities;
+    private ArrayList<ArrayList<GLEntity>> entitiesLayers;
+    private ArrayList<ArrayList<ArrayList<GLEntity>>> entitiesBatchLayers;
     public int currentDrawCount;
 
     public GLScene()
@@ -40,6 +43,14 @@ public class GLScene extends GLEntity
         this.batchRenderingMode = true;
         this.flattenedEntities = new ArrayList<GLEntity>();
         this.entities = new HashMap<Integer,GLEntity>();
+
+        this.entitiesLayers = new ArrayList<ArrayList<GLEntity>>(256);
+        this.entitiesBatchLayers = new ArrayList<ArrayList<ArrayList<GLEntity>>>(256);
+        for(int n=0; n<256; n++)
+        {
+            this.entitiesLayers.add(new ArrayList<GLEntity>());
+            this.entitiesBatchLayers.add(new ArrayList<ArrayList<GLEntity>>());
+        }
     }
 
     public void setBatchRenderingMode(boolean flag)
@@ -58,9 +69,8 @@ public class GLScene extends GLEntity
     }
 
 
-    public void draw()
-    {        
-       
+    public synchronized void  draw()
+    {
         this.currentDrawCount = 0;
         this.flattenedEntities.clear();
         this.flattenedEntities.ensureCapacity(this.entities.size());
@@ -89,10 +99,34 @@ public class GLScene extends GLEntity
             * Draw each entity alone independently of others
             * @todo : implements ordering based on entity drawing/z priority
             */
+            
+            Iterator<ArrayList<GLEntity>> layersIterator = this.entitiesLayers.iterator();
+            while (layersIterator.hasNext()) 
+            {
+                layersIterator.next().clear();
+            }
+
+
             entitiesIterator = this.flattenedEntities.iterator();
             while (entitiesIterator.hasNext()) 
             {
-                (entitiesIterator.next()).drawSingle();
+                GLEntity entity = entitiesIterator.next();
+                //entity.drawSingle();
+                int layer = entity.layer >= 0 ? entity.layer : 0;
+                layer = layer < 256 ? layer : 255;
+                this.entitiesLayers.get(layer).add(entity);
+            }
+
+            layersIterator = this.entitiesLayers.iterator();
+            while (layersIterator.hasNext()) 
+            {
+                ArrayList<GLEntity> entities = layersIterator.next();
+                entitiesIterator = entities.iterator();
+                while (entitiesIterator.hasNext()) 
+                {
+                    GLEntity entity = entitiesIterator.next();
+                    entity.drawSingle();
+                }
             }
             return;
         }
@@ -103,23 +137,27 @@ public class GLScene extends GLEntity
          */
         HashMap<Integer,ArrayList<GLEntity>> materialLayers = new HashMap<Integer,ArrayList<GLEntity>>();
         
+        Iterator<ArrayList<ArrayList<GLEntity>>> layersBatchIterator = this.entitiesBatchLayers.iterator();
+        while (layersBatchIterator.hasNext()) 
+        {
+            layersBatchIterator.next().clear();
+        }
 
         /*
-         * Arrange entities in different layers depending on their materials
-         * @todo : add drawing/z priority for arranging
+         * Arrange entities in different groups depending on their materials
          */
         entitiesIterator = this.flattenedEntities.iterator();
         while (entitiesIterator.hasNext()) 
         {
                 GLEntity entity = entitiesIterator.next();
-                ArrayList<GLEntity> layer = materialLayers.get(entity.getMaterialUid());
-                if(layer == null)
+                ArrayList<GLEntity> group = materialLayers.get(entity.getMaterialUid());
+                if(group == null)
                 {
                    
-                    layer = new ArrayList<GLEntity>();
-                    materialLayers.put(entity.getMaterialUid(),layer);
+                    group = new ArrayList<GLEntity>();
+                    materialLayers.put(entity.getMaterialUid(),group);
                 }
-                layer.add(entity);
+                group.add(entity);
         }
        
 
@@ -127,17 +165,37 @@ public class GLScene extends GLEntity
          * Set all layers within an ArrayList
          * @todo : implement ordering of layers
          */
-        Vector<ArrayList<GLEntity>> layers = new Vector<ArrayList<GLEntity>>(materialLayers.size());
-        for (Map.Entry<Integer, ArrayList<GLEntity>> layer : materialLayers.entrySet()) 
+        //Vector<ArrayList<GLEntity>> layers = new Vector<ArrayList<GLEntity>>(materialLayers.size());
+        for (Map.Entry<Integer, ArrayList<GLEntity>> group : materialLayers.entrySet()) 
         {
-            
-            layers.add(layer.getValue());
+            ArrayList<GLEntity> entities = group.getValue();
+            GLEntity entity = entities.get(0);
+            int layer = entity.layer >= 0 ? entity.layer : 0;
+            layer = layer < 256 ? layer : 255;
+            this.entitiesBatchLayers.get(layer).add(entities);
         }
         
+        /*
+         * 
+         */
+        layersBatchIterator = this.entitiesBatchLayers.iterator();
+        while (layersBatchIterator.hasNext()) 
+        {
+            ArrayList<ArrayList<GLEntity>> entitiesArrayOfArray = layersBatchIterator.next();
+
+            Iterator<ArrayList<GLEntity>> entitiesArrayIterator = entitiesArrayOfArray.iterator();
+            while (entitiesArrayIterator.hasNext()) 
+            {
+                ArrayList<GLEntity> entities = entitiesArrayIterator.next();
+                GLSprite entity = (GLSprite)entities.get(0);
+                entity.drawBatch(entities);
+            }
+        }
 
         /*
          * Draw all layers
          */
+        /*
         for (Enumeration<ArrayList<GLEntity>> layer = layers.elements(); layer.hasMoreElements();)
         {
             ArrayList<GLEntity> entities = layer.nextElement();
@@ -149,6 +207,7 @@ public class GLScene extends GLEntity
             
 
         }
+        */
         
     }
 

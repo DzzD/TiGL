@@ -143,36 +143,43 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     }
 
     
-    float xy[] = new float[2];
-
+    private float xy[] = new float[2];
+    private final int MAX_POINTER = 5;
+    private float lastTouchPositionX[] = new float[MAX_POINTER];
+    private float lastTouchPositionY[] = new float[MAX_POINTER];
     @Override
     public boolean onTouchEvent(MotionEvent e) 
     {
         
-
-        int pointerIndex = e.getActionIndex();
-        int pointerId = e.getPointerId(pointerIndex);
-
-        //get masked (not specific to a pointer) action
         int actionId = e.getActionMasked();
- 
-        float x = e.getX(pointerIndex);
-        float y = e.getY(pointerIndex);
-
-        /* 
-         * Normalize coordinate to OpenGL
-         */
-        x = 2f * x / this.width - 1f;
-        y = 1f - 2f * y / this.height ;
 
         /*
-         * Compute scene position
+         * For move we search for the real pointer Index (https://gamedev.stackexchange.com/questions/56271/android-multitouch-how-to-detect-movement-on-non-primary-pointer-finger)
          */
-        xy[0] = x;
-        xy[1] = y;
-        this.scene.matrixInvert.mapPoints(xy);
-        float sceneX = xy[0];
-        float sceneY = xy[1];
+        int pointerCount = 0;
+        int[] pointerIndexes = new int[MAX_POINTER];
+        if (actionId == MotionEvent.ACTION_MOVE) 
+        {
+            
+            for (int i = 0; i < e.getPointerCount() && i < MAX_POINTER; i++) 
+            {
+                if (lastTouchPositionX[i] != e.getX(i) || lastTouchPositionY[i] != e.getY(i)) 
+                {
+                    lastTouchPositionX[i] = e.getX(i);
+                    lastTouchPositionY[i] = e.getY(i);
+                    pointerIndexes[pointerCount] = i;
+                    pointerCount++;
+                    //break;
+                }
+            }
+            // Log.i("TIGL", "GLView Pointer moved count = " + pointerCount);
+        }
+        else
+        {
+            pointerCount = 1;
+            pointerIndexes[0] = e.getActionIndex(); ;
+        }
+ 
 
 
         //Log.i("TIGL", "GLView MotionEvent (" + xy[0] + "," + xy[1] +")");
@@ -182,84 +189,100 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_POINTER_DOWN:
-                //Log.i("TIGL", "GLView MotionEvent.ACTION_DOWN P" + pointerId);
                 action = GLTouchEvent.ACTION_DOWN;
             break;
             case MotionEvent.ACTION_MOVE:
-                //Log.i("TIGL", "GLView MotionEvent.ACTION_MOVE P" + pointerId);
                 action = GLTouchEvent.ACTION_MOVE;
             break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_POINTER_UP:
-                //Log.i("TIGL", "GLView MotionEvent.ACTION_UP P" + pointerId);
                 action = GLTouchEvent.ACTION_UP;
             break;
             case MotionEvent.ACTION_CANCEL:
-                //Log.i("TIGL", "GLView MotionEvent.ACTION_CANCEL P" + pointerId);
                 action = GLTouchEvent.ACTION_CANCEL;
             break;
     
         }
 
-        /*
-         * Do an event for the scene as it is always touched
-         * */
-        if(this.scene.touchEnabled)
+        for(int n = 0; n<pointerCount; n++)
         {
-            GLTouchEvent glTouchEvent = new GLTouchEvent();
-            glTouchEvent.action = action; 
-            glTouchEvent.pointer = pointerId;
-            glTouchEvent.sceneX = sceneX;
-            glTouchEvent.sceneY = sceneY;
-            glTouchEvent.x = sceneX;
-            glTouchEvent.y = sceneY;
-            glTouchEvent.entityId = this.scene.id;
-            this.glViewListener.onTouch(glTouchEvent);
-        }
+            int pointerIndex = pointerIndexes[n];
+            int pointerId = e.getPointerId(pointerIndex);
+            float x = e.getX(pointerIndex);
+            float y = e.getY(pointerIndex);
 
+            /* 
+            * Normalize coordinate to OpenGL
+            */
+            x = 2f * x / this.width - 1f;
+            y = 1f - 2f * y / this.height ;
 
-
-        
-        /*
-         * For each touch enabled entity compute local coordinates and launch event
-         * */
-        HashMap<Integer,GLEntity> entities= this.scene.getEntities();
-        int entityDrawOrder = -1;
-        GLTouchEvent glTouchEvent = new GLTouchEvent();
-
-        for (Map.Entry<Integer, GLEntity> entityMap : entities.entrySet()) 
-        {
-            GLEntity entity = entityMap.getValue();
-
-            if(!entity.touchEnabled || entity.lastDrawOrder < entityDrawOrder)
-            {
-                continue;
-            }
-
+            /*
+            * Compute scene position
+            */
             xy[0] = x;
             xy[1] = y;
-            entity.matrixInvert.mapPoints(xy);
-            
-            // Log.i("TIGL", "GLView MotionEvent (" + xy[0] + "," + xy[1] +")");
-            if(xy[0] < 0 || xy[0] > entity.width || xy[1] < 0 || xy[1] > entity.height)
-            {
-                continue;
-            }
+            this.scene.matrixInvert.mapPoints(xy);
+            float sceneX = xy[0];
+            float sceneY = xy[1];
 
-            // Log.i("TIGL", "*******************");
-            //GLTouchEvent glTouchEvent = new GLTouchEvent();
-            glTouchEvent.action = action; 
-            glTouchEvent.pointer = pointerId;
-            glTouchEvent.sceneX = sceneX;
-            glTouchEvent.sceneY = sceneY;
-            glTouchEvent.x = xy[0];
-            glTouchEvent.y = xy[1];
-            glTouchEvent.entityId = entity.id;
-            entityDrawOrder = entity.lastDrawOrder;
-        }
-        if(entityDrawOrder != -1)
-        {
-            this.glViewListener.onTouch(glTouchEvent);
+            /*
+            * Do an event for the scene if touch enabled as it is always touched
+            */
+            if(this.scene.touchEnabled)
+            {
+                GLTouchEvent glTouchEvent = new GLTouchEvent();
+                glTouchEvent.action = action; 
+                glTouchEvent.pointer = pointerId;
+                glTouchEvent.sceneX = sceneX;
+                glTouchEvent.sceneY = sceneY;
+                glTouchEvent.x = sceneX;
+                glTouchEvent.y = sceneY;
+                glTouchEvent.entityId = this.scene.id;
+                this.glViewListener.onTouch(glTouchEvent);
+            }
+            
+            /*
+            * For each touch enabled entities compute local coordinates and launch event
+            * */
+            HashMap<Integer,GLEntity> entities= this.scene.getEntities();
+            int entityDrawOrder = -1;
+            GLTouchEvent glTouchEvent = new GLTouchEvent();
+
+            for (Map.Entry<Integer, GLEntity> entityMap : entities.entrySet()) 
+            {
+                GLEntity entity = entityMap.getValue();
+
+                if(!entity.touchEnabled || entity.lastDrawOrder < entityDrawOrder)
+                {
+                    continue;
+                }
+
+                xy[0] = x;
+                xy[1] = y;
+                entity.matrixInvert.mapPoints(xy);
+                
+                // Log.i("TIGL", "GLView MotionEvent (" + xy[0] + "," + xy[1] +")");
+                if(xy[0] < 0 || xy[0] > entity.width || xy[1] < 0 || xy[1] > entity.height)
+                {
+                    continue;
+                }
+
+                // Log.i("TIGL", "*******************");
+                //GLTouchEvent glTouchEvent = new GLTouchEvent();
+                glTouchEvent.action = action; 
+                glTouchEvent.pointer = pointerId;
+                glTouchEvent.sceneX = sceneX;
+                glTouchEvent.sceneY = sceneY;
+                glTouchEvent.x = xy[0];
+                glTouchEvent.y = xy[1];
+                glTouchEvent.entityId = entity.id;
+                entityDrawOrder = entity.lastDrawOrder;
+            }
+            if(entityDrawOrder != -1)
+            {
+                this.glViewListener.onTouch(glTouchEvent);
+            }
         }
 
         return true;

@@ -56,6 +56,12 @@ public class GLEntity
     public float y;
 
     /*
+     * Layer for this sprite
+     * Sprites on higher layers are drawn on top
+     */
+    public int layer;
+
+    /*
      * Pivot location for rotation and scale
      */
     public float px;
@@ -120,113 +126,6 @@ public class GLEntity
         return GLEntity.idGenerator=0;
     }
 
-    public static float propertyToFloat(Object obj)
-    {
-
-        if(obj == null)
-        {
-            return 0;
-        }
-
-        
-        if(obj instanceof Float)
-        {
-            return (float)obj;
-        }
-
-        if(obj instanceof Double)
-        {
-            return ((Double)obj).floatValue();
-        }
-
-
-        if(obj instanceof Integer)
-        {
-            return ((Integer)obj).floatValue();
-        }
-
-        if(obj instanceof String)
-        {
-            return Float.parseFloat((String)obj);
-        }
-
-        return 0;
-
-    }
-
-    
-    public static int propertyToInt(Object obj)
-    {
-
-        if(obj == null)
-        {
-            return 0;
-        }
-
-        
-        if(obj instanceof Integer)
-        {
-            return (int)obj;
-        }
-
-        if(obj instanceof Double)
-        {
-            return ((Double)obj).intValue();
-        }
-
-
-        if(obj instanceof Float)
-        {
-            return ((Float)obj).intValue();
-        }
-
-        if(obj instanceof String)
-        {
-            return Integer.parseInt((String)obj);
-        }
-
-        return 0;
-
-    }
-
-    
-    public static boolean propertyToBoolean(Object obj)
-    {
-
-        if(obj == null)
-        {
-            return false;
-        }
-
-        
-        if(obj instanceof Boolean)
-        {
-            return (boolean)obj;
-        }
-
-        if(obj instanceof Double)
-        {
-            return ((Double)obj) != 0;
-        }
-
-        if(obj instanceof Float)
-        {
-            return ((Float)obj) != 0;
-        }
-
-        if(obj instanceof Integer)
-        {
-            return ((Integer)obj) != 0;
-        }
-
-        if(obj instanceof String)
-        {
-            return Boolean.parseBoolean((String)obj);
-        }
-
-        return false;
-
-    }
 
     /*
      * Create a ne GLEntity
@@ -237,16 +136,17 @@ public class GLEntity
     {
         this.id = GLEntity.getNewUid();
         this.type = GL_ENTITY;
-        this.x = options.get("x") != null ? GLEntity.propertyToFloat(options.get("x")) : 0;
-        this.y = options.get("y") != null ? GLEntity.propertyToFloat(options.get("y")) : 0;
-        this.r = options.get("r") != null ? GLEntity.propertyToFloat(options.get("r")) : 0;
-        this.px = options.get("py") != null ? GLEntity.propertyToFloat(options.get("px")) : 0;
-        this.py = options.get("px") != null ? GLEntity.propertyToFloat(options.get("py")) : 0;
-        this.sx = options.get("sx") != null ? GLEntity.propertyToFloat(options.get("sx")) : 1;
-        this.sy = options.get("sy") != null ? GLEntity.propertyToFloat(options.get("sy")) : 1;
-        this.width = options.get("width") != null ? GLEntity.propertyToFloat(options.get("width")) : -1;
-        this.height = options.get("height") != null ? GLEntity.propertyToFloat(options.get("height")) : -1;
-        this.touchEnabled = options.get("touchEnabled") != null ? GLEntity.propertyToBoolean(options.get("touchEnabled")) : false;
+        this.x = options.get("x") != null ? Properties.propertyToFloat(options.get("x")) : 0;
+        this.y = options.get("y") != null ? Properties.propertyToFloat(options.get("y")) : 0;
+        this.layer = options.get("layer") != null ? Properties.propertyToInt(options.get("layer")) : 1;
+        this.r = options.get("r") != null ? Properties.propertyToFloat(options.get("r")) : 0;
+        this.px = options.get("py") != null ? Properties.propertyToFloat(options.get("px")) : 0;
+        this.py = options.get("px") != null ? Properties.propertyToFloat(options.get("py")) : 0;
+        this.sx = options.get("sx") != null ? Properties.propertyToFloat(options.get("sx")) : 1;
+        this.sy = options.get("sy") != null ? Properties.propertyToFloat(options.get("sy")) : 1;
+        this.width = options.get("width") != null ? Properties.propertyToFloat(options.get("width")) : -1;
+        this.height = options.get("height") != null ? Properties.propertyToFloat(options.get("height")) : -1;
+        this.touchEnabled = options.get("touchEnabled") != null ? Properties.propertyToBoolean(options.get("touchEnabled")) : false;
         this.parent= null;
         this.childs = new ArrayList<GLEntity>();
         this.matrix =  new Matrix();
@@ -295,6 +195,14 @@ public class GLEntity
         synchronized(entities)
         {
             entities.remove(glEntity.id);
+        }
+    }
+
+    public synchronized void remove()
+    {
+        if(this.parent != null)
+        {
+            this.parent.remove(this);
         }
     }
 

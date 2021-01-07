@@ -88,12 +88,12 @@ public class GLSprite extends GLEntity
     {
         super(options);
         this.type = GL_SPRITE;
-        this.pixelWidth = options.get("pixelWidth") != null ? GLEntity.propertyToInt(options.get("pixelWidth")) : -1;
-        this.pixelHeight = options.get("pixelHeight") != null ? GLEntity.propertyToInt(options.get("pixelHeight")) : -1;
-        this.subTextureWidth = options.get("subTextureWidth") != null ? GLEntity.propertyToInt(options.get("subTextureWidth")) : -1;
-        this.subTextureHeight = options.get("subTextureHeight") != null ? GLEntity.propertyToInt(options.get("subTextureHeight")) : -1;
-        this.subTextureLeft = options.get("subTextureLeft") != null ? GLEntity.propertyToInt(options.get("subTextureLeft")) : 0;
-        this.subTextureTop = options.get("subTextureTop") != null ? GLEntity.propertyToInt(options.get("subTextureTop")) : 0;
+        this.pixelWidth = options.get("pixelWidth") != null ? Properties.propertyToInt(options.get("pixelWidth")) : -1;
+        this.pixelHeight = options.get("pixelHeight") != null ? Properties.propertyToInt(options.get("pixelHeight")) : -1;
+        this.subTextureWidth = options.get("subTextureWidth") != null ? Properties.propertyToInt(options.get("subTextureWidth")) : -1;
+        this.subTextureHeight = options.get("subTextureHeight") != null ? Properties.propertyToInt(options.get("subTextureHeight")) : -1;
+        this.subTextureLeft = options.get("subTextureLeft") != null ? Properties.propertyToInt(options.get("subTextureLeft")) : 0;
+        this.subTextureTop = options.get("subTextureTop") != null ? Properties.propertyToInt(options.get("subTextureTop")) : 0;
         this.animationFrameCount = 1;
         this.animationFrameColCount = 0;
         this.animationFrameRowCount = 0;
@@ -190,11 +190,11 @@ public class GLSprite extends GLEntity
 
     public void playAnimation(HashMap<String,Object> options)
     {
-        this.animationFrameStart = options.get("start") != null ? GLEntity.propertyToInt(options.get("start")) : 0;
-        this.animationFrameEnd = options.get("end") != null ? GLEntity.propertyToInt(options.get("end")) : this.animationFrameCount - 1;
-        this.animationDuration = options.get("duration") != null ? GLEntity.propertyToInt(options.get("duration")) : 1000;
-        this.animationLoop = options.get("loop") != null ? GLEntity.propertyToInt(options.get("loop")) : 1;
-        this.animationPingPong = options.get("pingpong") != null ? GLEntity.propertyToBoolean(options.get("pingpong")) : false;
+        this.animationFrameStart = options.get("start") != null ? Properties.propertyToInt(options.get("start")) : 0;
+        this.animationFrameEnd = options.get("end") != null ? Properties.propertyToInt(options.get("end")) : this.animationFrameCount - 1;
+        this.animationDuration = options.get("duration") != null ? Properties.propertyToInt(options.get("duration")) : 1000;
+        this.animationLoop = options.get("loop") != null ? Properties.propertyToInt(options.get("loop")) : 1;
+        this.animationPingPong = options.get("pingpong") != null ? Properties.propertyToBoolean(options.get("pingpong")) : false;
         this.animationStartTime = System.currentTimeMillis();  
     }
 
