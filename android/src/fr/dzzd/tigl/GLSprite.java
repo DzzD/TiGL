@@ -373,52 +373,81 @@ public class GLSprite extends GLEntity
     
 
     static int tmpBufferCapacity = 1;
+    static float[] matrix3x3 = new float[9];
     //static GLSprite[] sprts = new GLSprite[tmpBufferCapacity];
+    static float[] xTranforms= new float[6 * 3 * tmpBufferCapacity];
+    static float[] yTranforms= new float[6 * 3 * tmpBufferCapacity];
     static float[] verts= new float[6 * 2 * tmpBufferCapacity];
     static float[] uvst= new float[6 * 2 * tmpBufferCapacity];
     // static float[] uvsCached= new float[6 * 2 * tmpBufferCapacity];
     static FloatBuffer uvsb = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
     static FloatBuffer vbuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    static FloatBuffer xTranformsBuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 3 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+    static FloatBuffer yTranformsBuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 3 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
 
     @Override
     public void drawSingle()
     {
         //Log.i("TIGL", "GLSprite : drawSingle()");
-        this.matrix.mapPoints(verts, 0, this.vertices, 0, 4);
-        vbuff.clear();
-        vbuff.put(verts, 0, 8);
-        vbuff.rewind();
-        GLShader.drawTexture(vbuff, this.uvsBuffer, this.textureHandle, 1, true);
+        // this.matrix.mapPoints(verts, 0, this.vertices, 0, 4);
+        this.matrix.getValues(matrix3x3);
+
+        float xtx = matrix3x3[0];
+        float xty = matrix3x3[1];
+        float xtz = matrix3x3[2];
+
+        float ytx = matrix3x3[3];
+        float yty = matrix3x3[4];
+        float ytz = matrix3x3[5];
+
+        xTranforms[0] = xtx;
+        xTranforms[1] = xty;
+        xTranforms[2] = xtz;
+        
+        xTranforms[3] = xtx;
+        xTranforms[4] = xty;
+        xTranforms[5] = xtz;
+
+        xTranforms[6] = xtx;
+        xTranforms[7] = xty;
+        xTranforms[8] = xtz;
+
+        xTranforms[9] = xtx;
+        xTranforms[10] = xty;
+        xTranforms[11] = xtz;
+
+        yTranforms[0] = ytx;
+        yTranforms[1] = yty;
+        yTranforms[2] = ytz;
+        
+        yTranforms[3] = ytx;
+        yTranforms[4] = yty;
+        yTranforms[5] = ytz;
+
+        yTranforms[6] = ytx;
+        yTranforms[7] = yty;
+        yTranforms[8] = ytz;
+
+        yTranforms[9] = ytx;
+        yTranforms[10] = yty;
+        yTranforms[11] = ytz;
+
+        xTranformsBuff.clear();
+        xTranformsBuff.put(xTranforms, 0, 12);
+        xTranformsBuff.flip();
+
+        yTranformsBuff.clear();
+        yTranformsBuff.put(yTranforms, 0, 12);
+        yTranformsBuff.flip();
+
+        // vbuff.clear();
+        // vbuff.put(verts, 0, 8);
+        // vbuff.flip();
+        
+        GLShader.drawTexture(xTranformsBuff, yTranformsBuff, this.vertexBuffer, this.uvsBuffer, this.textureHandle, 1, true);
         this.lastDrawOrder = this.getScene().currentDrawCount++;
     }
-/*
-    private void computeVertices(int startIndex, int count)
-    {
-        for(int index = 0; index < count; index++)
-        {
-            GLSprite sprite = sprts[startIndex + index];
-            int vIndex =  (startIndex + index) * 2 * 6;
-            sprite.matrix.mapPoints(verts, vIndex, sprite.vertices, 0, 4);
-            verts[vIndex + 8 ] = verts[vIndex + 0 ];
-            verts[vIndex + 9 ] = verts[vIndex + 1 ];
-            verts[vIndex + 10 ] = verts[vIndex + 4 ];
-            verts[vIndex + 11 ] = verts[vIndex + 5 ];
 
-            uvst[vIndex] = sprite.uvs[0];
-            uvst[vIndex+1] = sprite.uvs[1];
-            uvst[vIndex+2] = sprite.uvs[2];
-            uvst[vIndex+3] = sprite.uvs[3];
-            uvst[vIndex+4] = sprite.uvs[4];
-            uvst[vIndex+5] = sprite.uvs[5];
-            uvst[vIndex+6] = sprite.uvs[6];
-            uvst[vIndex+7] = sprite.uvs[7];
-            uvst[vIndex+8] = sprite.uvs[0];
-            uvst[vIndex+9] = sprite.uvs[1];
-            uvst[vIndex+10] = sprite.uvs[4];
-            uvst[vIndex+11] = sprite.uvs[5];
-        }
-    }
-    */
     @Override
     public void drawBatch(ArrayList<GLEntity> entities)
     {
@@ -429,9 +458,13 @@ public class GLSprite extends GLEntity
             Log.i("TIGL", "GLSprite : increase draw buffer size to " + tmpBufferCapacity);
             verts= new float[6 * 2 * tmpBufferCapacity];
             uvst= new float[6 * 2 * tmpBufferCapacity];
+            xTranforms= new float[6 * 3 * tmpBufferCapacity];
+            yTranforms= new float[6 * 3 * tmpBufferCapacity];
             // uvsCached= new float[6 * 2 * tmpBufferCapacity];
             uvsb = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
             vbuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 2 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            xTranformsBuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 3 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
+            yTranformsBuff = ByteBuffer.allocateDirect(tmpBufferCapacity * 6 * 3 * Float.BYTES).order(ByteOrder.nativeOrder()).asFloatBuffer();
         }
 
         uvsb.clear();
@@ -441,12 +474,82 @@ public class GLSprite extends GLEntity
         {
             GLSprite sprite = (GLSprite)childIterator.next();
             sprite.lastDrawOrder = sprite.getScene().currentDrawCount++;
+
+
             int vIndex = entityCount * 2 * 6;
-            sprite.matrix.mapPoints(verts, vIndex, sprite.vertices, 0, 4);
-            verts[vIndex + 8 ] = verts[vIndex + 0 ];
-            verts[vIndex + 9 ] = verts[vIndex + 1 ];
-            verts[vIndex + 10 ] = verts[vIndex + 4 ];
-            verts[vIndex + 11 ] = verts[vIndex + 5 ];
+            int transformIndex = entityCount * 3 * 6;
+            
+            sprite.matrix.getValues(matrix3x3);
+
+            float xtx = matrix3x3[0];
+            float xty = matrix3x3[1];
+            float xtz = matrix3x3[2];
+
+            float ytx = matrix3x3[3];
+            float yty = matrix3x3[4];
+            float ytz = matrix3x3[5];
+
+            xTranforms[transformIndex + 0] = xtx;
+            xTranforms[transformIndex + 1] = xty;
+            xTranforms[transformIndex + 2] = xtz;
+            
+            xTranforms[transformIndex + 3] = xtx;
+            xTranforms[transformIndex + 4] = xty;
+            xTranforms[transformIndex + 5] = xtz;
+
+            xTranforms[transformIndex + 6] = xtx;
+            xTranforms[transformIndex + 7] = xty;
+            xTranforms[transformIndex + 8] = xtz;
+
+            xTranforms[transformIndex + 9] = xtx;
+            xTranforms[transformIndex + 10] = xty;
+            xTranforms[transformIndex + 11] = xtz;
+
+            xTranforms[transformIndex + 12] = xtx;
+            xTranforms[transformIndex + 13] = xty;
+            xTranforms[transformIndex + 14] = xtz;
+
+            xTranforms[transformIndex + 15] = xtx;
+            xTranforms[transformIndex + 16] = xty;
+            xTranforms[transformIndex + 17] = xtz;
+
+            
+            yTranforms[transformIndex + 0] = ytx;
+            yTranforms[transformIndex + 1] = yty;
+            yTranforms[transformIndex + 2] = ytz;
+            
+            yTranforms[transformIndex + 3] = ytx;
+            yTranforms[transformIndex + 4] = yty;
+            yTranforms[transformIndex + 5] = ytz;
+
+            yTranforms[transformIndex + 6] = ytx;
+            yTranforms[transformIndex + 7] = yty;
+            yTranforms[transformIndex + 8] = ytz;
+
+            yTranforms[transformIndex + 9] = ytx;
+            yTranforms[transformIndex + 10] = yty;
+            yTranforms[transformIndex + 11] = ytz;
+
+            yTranforms[transformIndex + 12] = ytx;
+            yTranforms[transformIndex + 13] = yty;
+            yTranforms[transformIndex + 14] = ytz;
+
+            yTranforms[transformIndex + 15] = ytx;
+            yTranforms[transformIndex + 16] = yty;
+            yTranforms[transformIndex + 17] = ytz;
+
+            verts[vIndex] = sprite.vertices[0];
+            verts[vIndex + 1] = sprite.vertices[1];
+            verts[vIndex + 2] = sprite.vertices[2];
+            verts[vIndex + 3] = sprite.vertices[3];
+            verts[vIndex + 4] = sprite.vertices[4];
+            verts[vIndex + 5] = sprite.vertices[5];
+            verts[vIndex + 6] = sprite.vertices[6];
+            verts[vIndex + 7] = sprite.vertices[7];
+            verts[vIndex + 8 ] = sprite.vertices[0];
+            verts[vIndex + 9 ] = sprite.vertices[1];
+            verts[vIndex + 10 ] = sprite.vertices[4];
+            verts[vIndex + 11 ] = sprite.vertices[5];
 
             uvst[vIndex] = sprite.uvs[0];
             uvst[vIndex+1] = sprite.uvs[1];
@@ -474,7 +577,17 @@ public class GLSprite extends GLEntity
         uvsb.put(uvst, 0, entityCount * 12);
         uvsb.flip();
 
-        GLShader.drawTexture(vbuff, uvsb, this.textureHandle, entityCount, false);
+        
+        xTranformsBuff.clear();
+        xTranformsBuff.put(xTranforms, 0, entityCount * 18);
+        xTranformsBuff.flip();
+
+        yTranformsBuff.clear();
+        yTranformsBuff.put(yTranforms, 0, entityCount * 18);
+        yTranformsBuff.flip();
+
+
+       GLShader.drawTexture(xTranformsBuff, yTranformsBuff, vbuff, uvsb, this.textureHandle, entityCount, false);
 
     }
     

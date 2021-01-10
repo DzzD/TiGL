@@ -50,7 +50,7 @@ public class GLShader
         "  textureUv = textureUvs;" +
         "}";
         */
-    
+    /*
         private final static String vShaderTexture =
         "attribute vec2 vertices;" +
         "attribute vec2 textureUvs;" +
@@ -58,6 +58,19 @@ public class GLShader
         "void main()" +
         "{" +
         "  gl_Position = vec4(vertices,0.0,1.0);" +
+        "  textureUv = textureUvs;" +
+        "}";
+*/
+
+    private final static String vShaderTexture =
+        "attribute vec3 xTransform;" +
+        "attribute vec3 yTransform;" +
+        "attribute vec2 vertices;" +
+        "attribute vec2 textureUvs;" +
+        "varying vec2 textureUv;" +
+        "void main()" +
+        "{" +
+        "  gl_Position = vec4(dot(vec3(vertices,1.0), xTransform), dot(vec3(vertices,1.0), yTransform), 0.0,1.0) ;" +
         "  textureUv = textureUvs;" +
         "}";
 
@@ -76,6 +89,8 @@ public class GLShader
     private static int progTextureMatrix;
     private static int progTextureVertices;
     private static int progTextureUvs;
+    private static int progTextureXTransform;
+    private static int progTextureYTransform;
 
     
 
@@ -83,7 +98,17 @@ public class GLShader
 	{    
 		int shader = GLES20.glCreateShader(type);  
 		GLES20.glShaderSource(shader, shaderCode);    
-		GLES20.glCompileShader(shader);    
+		GLES20.glCompileShader(shader);   
+        int[] compiled = new int[1];
+        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compiled, 0);
+        if (compiled[0] == 0) 
+        {
+            String info = GLES20.glGetShaderInfoLog(shader);
+            GLES20.glDeleteShader(shader);
+            shader = 0;
+            throw new RuntimeException("Could not compile shader " +
+                    type + ":" + info);
+        } 
 		return shader;
 	}    
 
@@ -101,7 +126,8 @@ public class GLShader
         /*
          * Gets pointers for basic texture drawing program parameters
          */
-        //progTextureMatrix = GLES20.glGetUniformLocation(progTexture, "matrix");
+        progTextureXTransform = GLES20.glGetAttribLocation(progTexture, "xTransform");
+        progTextureYTransform = GLES20.glGetAttribLocation(progTexture, "yTransform");
         progTextureVertices = GLES20.glGetAttribLocation(progTexture, "vertices");
         progTextureUvs = GLES20.glGetAttribLocation(progTexture, "textureUvs");
 
@@ -109,23 +135,20 @@ public class GLShader
 
     }
 
-    static long ta =0;
-    static long tb =0;
-    static long tc =0;
-    static long td =0;
-    static int callCount = 0;
     
-    public final static void drawTexture(FloatBuffer vertices, FloatBuffer textureUvs, int textureHandle, int count, boolean triangleFan)
+    
+    public final static void drawTexture(FloatBuffer xTransforms, FloatBuffer yTransforms, FloatBuffer vertices, FloatBuffer textureUvs, int textureHandle, int count, boolean triangleFan)
     {
-        /*
-         * Performs OpenGL drawing
-         */
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle);
         GLES20.glUseProgram(progTexture);
         GLES20.glEnableVertexAttribArray(progTextureVertices);
         GLES20.glVertexAttribPointer(progTextureVertices, 2, GLES20.GL_FLOAT, false,  2*Float.BYTES, vertices);
         GLES20.glEnableVertexAttribArray(progTextureUvs);
         GLES20.glVertexAttribPointer(progTextureUvs, 2, GLES20.GL_FLOAT, false, 2*Float.BYTES, textureUvs);
+        GLES20.glEnableVertexAttribArray(progTextureXTransform);
+        GLES20.glVertexAttribPointer(progTextureXTransform, 3, GLES20.GL_FLOAT, false, 3*Float.BYTES, xTransforms);
+        GLES20.glEnableVertexAttribArray(progTextureYTransform);
+        GLES20.glVertexAttribPointer(progTextureYTransform, 3, GLES20.GL_FLOAT, false, 3*Float.BYTES, yTransforms);
       
         if(triangleFan)
         {
@@ -135,10 +158,13 @@ public class GLShader
         {
             GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6 * count);
         }
+        GLES20.glDisableVertexAttribArray(progTextureXTransform);
+        GLES20.glDisableVertexAttribArray(progTextureYTransform);
         GLES20.glDisableVertexAttribArray(progTextureVertices);
         GLES20.glDisableVertexAttribArray(progTextureUvs);
 
     }
+
 
     
 

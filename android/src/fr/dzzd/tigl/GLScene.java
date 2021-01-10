@@ -29,6 +29,7 @@ public class GLScene extends GLEntity
 {
     private boolean batchRenderingMode;
     private HashMap<Integer,GLEntity> entities;
+    public static final int MAX_LAYER = 256;
     
     private ArrayList<GLEntity> flattenedEntities;
     private ArrayList<ArrayList<GLEntity>> entitiesLayers;
@@ -43,14 +44,14 @@ public class GLScene extends GLEntity
         this.batchRenderingMode = true;
         this.flattenedEntities = new ArrayList<GLEntity>();
         this.entities = new HashMap<Integer,GLEntity>();
-
-        this.entitiesLayers = new ArrayList<ArrayList<GLEntity>>(256);
-        this.entitiesBatchLayers = new ArrayList<ArrayList<ArrayList<GLEntity>>>(256);
-        for(int n=0; n<256; n++)
+        this.entitiesLayers = new ArrayList<ArrayList<GLEntity>>(MAX_LAYER);
+        this.entitiesBatchLayers = new ArrayList<ArrayList<ArrayList<GLEntity>>>(MAX_LAYER);
+        for(int n=0; n<MAX_LAYER; n++)
         {
             this.entitiesLayers.add(new ArrayList<GLEntity>());
             this.entitiesBatchLayers.add(new ArrayList<ArrayList<GLEntity>>());
         }
+        
     }
 
     public void setBatchRenderingMode(boolean flag)
@@ -113,7 +114,7 @@ public class GLScene extends GLEntity
                 GLEntity entity = entitiesIterator.next();
                 //entity.drawSingle();
                 int layer = entity.layer >= 0 ? entity.layer : 0;
-                layer = layer < 256 ? layer : 255;
+                layer = layer < MAX_LAYER ? layer : MAX_LAYER - 1;
                 this.entitiesLayers.get(layer).add(entity);
             }
 
@@ -171,7 +172,7 @@ public class GLScene extends GLEntity
             ArrayList<GLEntity> entities = group.getValue();
             GLEntity entity = entities.get(0);
             int layer = entity.layer >= 0 ? entity.layer : 0;
-            layer = layer < 256 ? layer : 255;
+            layer = layer < MAX_LAYER ? layer : MAX_LAYER - 1;
             this.entitiesBatchLayers.get(layer).add(entities);
         }
         
