@@ -18,11 +18,10 @@
 
 package fr.dzzd.tigl;
 
-import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import android.util.DisplayMetrics;
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View.OnFocusChangeListener;
 import android.view.View;
@@ -49,10 +48,10 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     private GLScene scene;
 
     private int totalFrameCount = 0;
-    private int frameCount = 0;
-    private long oglTime = 0;
-    private long jsTime = 0;
-    private long matTime = 0;
+    private long[] timeOpengl = new long[5];
+    private long[] timeJavascript = new long[5];
+    private long[] timeMatrix = new long[5];
+    private long[] timeFps = new long[5];
 
     private long fpsTime;
     private long fpsFrameCount;
@@ -86,7 +85,6 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         this.setGLViewListener(this);
         this.screenDpi = this.getContext().getResources().getDisplayMetrics().densityDpi;
     }
-
     public void onInit()
     {
 
@@ -331,8 +329,61 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         this.glViewListener.onResize(width  / this.unitsRatio, height  / this.unitsRatio, this.units);
     }
 
+    public int getTimeJavascriptUs()
+    {
+        long total = 0;
+        for(int n=0;n<this.timeJavascript.length;n++)
+        {
+            total+=this.timeJavascript[n];
+        }
+        return (int)(total/(this.timeJavascript.length*1000));
+    }
+
+    
+    public int getTimeMatrixUs()
+    {
+        long total = 0;
+        for(int n=0;n<this.timeMatrix.length;n++)
+        {
+            total+=this.timeMatrix[n];
+        }
+        return (int)(total/(this.timeMatrix.length * 1000));
+    }
+
+    
+    public int getTimeOpenglUs()
+    {
+        long total = 0;
+        for(int n=0;n<this.timeOpengl.length;n++)
+        {
+            total+=this.timeOpengl[n];
+        }
+        return (int)(total/(this.timeOpengl.length * 1000));
+    }
+
+    
+    public int getTimeFpsUs()
+    {
+        long total = 0;
+        for(int n=0;n<this.timeFps.length;n++)
+        {
+            total+=this.timeFps[n];
+        }
+        return (int)(total/(this.timeFps.length * 1000));
+    }
+    
+    public int getTimeIdleUs()
+    {
+        long result = this.getTimeFpsUs();
+        result -= this.getTimeOpenglUs();
+        result -= this.getTimeMatrixUs();
+        result -= this.getTimeJavascriptUs();
+        return (int)result;
+    }
+
 
     int c=0;
+    long timeFrameStart = 0;
     @Override
     public void onDrawFrame(GL10 gl) 
     {
@@ -341,16 +392,16 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
             Log.i("TIGL", "GLView - NO CURRENT CONTEXT EGL(onDrawFrame)");
         }
 
-        long t0 = System.nanoTime();
+        long T0 = System.nanoTime();
+        this.timeFps[this.totalFrameCount%this.timeFps.length] = this.timeFrameStart != 0 ? T0 - this.timeFrameStart : 0;
+        this.timeFrameStart = T0;
         
         /*
          * Call callback
          */
         this.glViewListener.onLoop();
 
-        long t1 = System.nanoTime();
-        
-        
+        long T1 = System.nanoTime();
 
         /*
          * Apply matrix transformation on all objects of the scene
@@ -361,11 +412,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         matrix.postTranslate(-1f, 1f);
         this.scene.updateMatrix(matrix);
         
-        
-
-        
-        
-        long t2 = System.nanoTime();
+        long T2 = System.nanoTime();
         
         
         /*
@@ -376,19 +423,18 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
                             ((this.backgroundColor)&0xFF)/255f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
-        this.scene.draw();
+        this.scene.draw();      
 
+        long T3 = System.nanoTime();
+
+        this.timeJavascript[this.totalFrameCount%this.timeJavascript.length] = (T1 - T0);
+        this.timeMatrix[this.totalFrameCount%this.timeMatrix.length] = (T2 - T1);
+        this.timeOpengl[this.totalFrameCount%this.timeOpengl.length] = (T3 - T2);
         
-
-        long t3 = System.nanoTime();
-        this.jsTime += t1 - t0;
-        this.matTime += t2 - t1;
-        this.oglTime += t3 - t2;
-        frameCount++;
 
         this.fpsFrameCount++;
 
-        if(frameCount == 300)
+        if(this.totalFrameCount%300 == 299)
         {
             this.fps = 1000000000 * this.fpsFrameCount / (System.nanoTime() - this.fpsTime);
             this.fpsFrameCount = 0;
@@ -397,23 +443,17 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
 
             DecimalFormat df = new DecimalFormat();
             df.setMaximumFractionDigits(2);
-            df.setMinimumFractionDigits(0);
-            BigDecimal openglTimeBd = new BigDecimal((oglTime/frameCount) / 1000000f);
-            BigDecimal javascriptTimeBd = new BigDecimal((jsTime/frameCount) / 1000000f);
-            BigDecimal matrixTimeBd = new BigDecimal((matTime/frameCount) / 1000000f);
-            BigDecimal fpsBd = new BigDecimal(fps);
-            openglTimeBd.setScale(2, BigDecimal.ROUND_HALF_UP);
-            javascriptTimeBd.setScale(2, BigDecimal.ROUND_HALF_UP);
-            matrixTimeBd.setScale(2, BigDecimal.ROUND_HALF_UP);
-            fpsBd.setScale(2, BigDecimal.ROUND_HALF_UP);
-            Log.i("TIGL", "GLView average time per frame for OpenGL (wait and draw) : " + df.format(openglTimeBd) + " ms");
-            Log.i("TIGL", "GLView average time per frame for JavaScript events call and eceived datas process : " + df.format(javascriptTimeBd) + " ms");
-            Log.i("TIGL", "GLView average time per frame for Matrices compute: " + df.format(matrixTimeBd) + " ms");
-            Log.i("TIGL", "GLView Framerate: " + df.format(fpsBd) + " FPS");
-            frameCount = 0;
-            oglTime = 0;
-            jsTime = 0;
-            matTime = 0;
+            df.setMinimumFractionDigits(2);
+            Log.i("TIGL", "GLView OpenGL : " + df.format(this.getTimeOpenglUs()/1000f) + " ms");
+            Log.i("TIGL", "GLView Matrices : " + df.format(this.getTimeMatrixUs()/1000f) + " ms");
+            Log.i("TIGL", "GLView Javascript (datas read) : " + df.format(this.getTimeJavascriptUs()/1000f) + " ms");
+            Log.i("TIGL", "GLView Idle time : " + df.format(this.getTimeIdleUs()/1000f) + " ms");
+            Log.i("TIGL", "GLView FPS : " + df.format(1000000f / this.getTimeFpsUs()));
+            // Log.i("TIGL", "GLView Framerate: " + df.format(fpsBd) + " FPS");
+            // frameCount = 0;
+            // oglTime = 0;
+            // jsTime = 0;
+            // matTime = 0;
 
         }
 

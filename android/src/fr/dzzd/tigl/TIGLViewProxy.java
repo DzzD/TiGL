@@ -499,6 +499,19 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	}
 
 	
+	@Kroll.getProperty @Kroll.method
+	public KrollDict getTimersUs()
+	{
+		KrollDict kd = new KrollDict();
+		kd.put("opengl", this.tiglView.getGLView().getTimeOpenglUs());
+		kd.put("matrix", this.tiglView.getGLView().getTimeMatrixUs());
+		kd.put("javascript", this.tiglView.getGLView().getTimeJavascriptUs());
+		kd.put("fps", this.tiglView.getGLView().getTimeFpsUs());
+		kd.put("idle", this.tiglView.getGLView().getTimeIdleUs());
+		return kd;
+	}
+
+	
 	@Kroll.setProperty @Kroll.method
 	public void setUnits(String units)
 	{
