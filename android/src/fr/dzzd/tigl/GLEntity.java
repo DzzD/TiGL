@@ -140,8 +140,8 @@ public class GLEntity
         this.y = options.get("y") != null ? Properties.propertyToFloat(options.get("y")) : 0;
         this.layer = options.get("layer") != null ? Properties.propertyToInt(options.get("layer")) : 1;
         this.r = options.get("r") != null ? Properties.propertyToFloat(options.get("r")) : 0;
-        this.px = options.get("py") != null ? Properties.propertyToFloat(options.get("px")) : 0;
-        this.py = options.get("px") != null ? Properties.propertyToFloat(options.get("py")) : 0;
+        this.px = options.get("px") != null ? Properties.propertyToFloat(options.get("px")) : 0;
+        this.py = options.get("py") != null ? Properties.propertyToFloat(options.get("py")) : 0;
         this.sx = options.get("sx") != null ? Properties.propertyToFloat(options.get("sx")) : 1;
         this.sy = options.get("sy") != null ? Properties.propertyToFloat(options.get("sy")) : 1;
         this.width = options.get("width") != null ? Properties.propertyToFloat(options.get("width")) : -1;
