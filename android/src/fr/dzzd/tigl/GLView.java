@@ -65,7 +65,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     private int backgroundColor;
 
     /*
-     * String defining unit to use : "dp" or "px" are accepted values
+     * String defining unit to use : "dp", "px", "hdp" are accepted values (hdp stand for "half dp")
      * */
     private String units = "px"; 
     private float unitsRatio = 1; 
@@ -78,29 +78,42 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         super(TiApplication.getAppCurrentActivity());
         Log.i("GLSprite", "GLView() Thread ==> " + Thread.currentThread());
         this.setBackgroundColor("#FFFFFF");
-        this.setUnits("px");
         this.setEGLContextClientVersion(2);
         this.setPreserveEGLContextOnPause(true);
         this.setRenderer(this);
         this.setGLViewListener(this);
         this.screenDpi = this.getContext().getResources().getDisplayMetrics().densityDpi;
+        this.setUnits("px");
     }
+
+    /*
+     * GLViewListener interface onInit(), should be overrided or set to another GLViewListener
+     */
     public void onInit()
     {
 
     }
-    
+
+    /*
+     * GLViewListener interface onResize(), should be overrided or set to another GLViewListener
+     */
     public void onResize(float width, float height, String units)
     {
         
         
     }
-    
+
+    /*
+     * GLViewListener interface onLoop(), should be overrided or set to another GLViewListener
+     */
     public void onLoop()
     {
         
     }
 
+    /*
+     * GLViewListener interface onTouch(), should be overrided or set to another GLViewListener
+     */
     public void onTouch(GLTouchEvent glTouchEvent)
     {
         
@@ -132,12 +145,24 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     {
         this.units = units.toLowerCase();
         
-        this.unitsRatio = 1f;
-        if("dp".equals(this.units))
+        switch(this.units)
         {
-            this.unitsRatio = this.screenDpi/160f;
-        }       
+            case "dp" :
+                this.unitsRatio = this.screenDpi/160f;
+            break;
+            
+            case "hdp" :
+                this.unitsRatio = this.screenDpi/320f;
+            break;
+
+            default :
+                this.unitsRatio = 1f;
+            break;
+        }
+             
         Log.i("TIGL", "GLView - Units modified to " + this.units + " Units ratio is " + this.unitsRatio + " dpi is " + this.screenDpi);
+        
+        this.glViewListener.onResize(this.width  / this.unitsRatio, this.height  / this.unitsRatio, this.units);
     }
 
     
@@ -298,6 +323,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
         BitmapCache.clear();
         GLTextureCache.clear();
         GLEntity.resetUid();
+
         this.scene = new GLScene();
         this.fpsFrameCount = 0;
         this.fpsTime = System.nanoTime();
