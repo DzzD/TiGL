@@ -20,7 +20,7 @@ package fr.dzzd.tigl;
 
 
 import android.graphics.Matrix;
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import java.util.*;
 import java.util.Map.Entry;
 import java.nio.*;
@@ -156,7 +156,7 @@ public class GLScene extends GLEntity
                 {
                    
                     group = new ArrayList<GLEntity>();
-                    materialLayers.put(entity.getMaterialUid(),group);
+                    materialLayers.put(entity.getMaterialUid(), group);
                 }
                 group.add(entity);
         }
@@ -188,27 +188,11 @@ public class GLScene extends GLEntity
             while (entitiesArrayIterator.hasNext()) 
             {
                 ArrayList<GLEntity> entities = entitiesArrayIterator.next();
-                GLSprite entity = (GLSprite)entities.get(0);
+                GLEntity entity = entities.get(0);
                 entity.drawBatch(entities);
             }
         }
 
-        /*
-         * Draw all layers
-         */
-        /*
-        for (Enumeration<ArrayList<GLEntity>> layer = layers.elements(); layer.hasMoreElements();)
-        {
-            ArrayList<GLEntity> entities = layer.nextElement();
-            if(entities.get(0).type == GL_SPRITE)
-            {
-                GLSprite entity = (GLSprite)entities.get(0);
-                entity.drawBatch(entities);
-            }
-            
-
-        }
-        */
         
     }
 

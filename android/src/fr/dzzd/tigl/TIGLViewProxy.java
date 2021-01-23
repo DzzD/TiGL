@@ -35,7 +35,7 @@ import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollProxy;
 import org.appcelerator.kroll.annotations.Kroll;
 import org.appcelerator.titanium.TiC;
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import org.appcelerator.kroll.common.TiConfig;
 import org.appcelerator.titanium.util.TiConvert;
 import org.appcelerator.titanium.proxy.TiViewProxy;
@@ -265,6 +265,59 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 						}
 					}
 					break;
+/*
+					case TiglManagerPacket.TEXTS_PACKED :
+					{
+						Object[] datas = (Object[])packet.getDatas();
+						for(int n = 0; n < datas.length; n+=2)
+						{
+							int id=(int)datas[n];
+							String text=(String)datas[n+1];
+							GLEntity glEntity =  entities.get(id);
+							if(glEntity == null) continue;
+							if(glEntity instanceof GLText)
+							{
+								((GLText)glEntity).setText(text);
+							}
+						}
+					}
+					break;
+*/
+					
+					case TiglManagerPacket.COLORS_PACKED :
+					{
+						long[] datas = (long[])packet.getDatas();
+						for(int n = 0; n < datas.length; n+=2)
+						{
+							int id = (int)datas[n];
+							int color = (int)datas[n+1];
+							GLEntity glEntity =  entities.get(id);
+							if(glEntity == null) continue;
+							if(glEntity instanceof GLText)
+							{
+								((GLText)glEntity).color = color;
+							}
+						}
+					}
+					break;
+
+					
+					case TiglManagerPacket.OUTLINE_COLORS_PACKED :
+					{
+						long[] datas = (long[])packet.getDatas();
+						for(int n = 0; n < datas.length; n+=2)
+						{
+							int id = (int)datas[n];
+							int color = (int)datas[n+1];
+							GLEntity glEntity =  entities.get(id);
+							if(glEntity == null) continue;
+							if(glEntity instanceof GLText)
+							{
+								((GLText)glEntity).outlineColor = color;
+							}
+						}
+					}
+					break;
 				}
 			}
 		}
@@ -324,6 +377,45 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		glEntity.py = py;
 	}
 
+	
+	
+	
+	@Kroll.method
+	public KrollDict setEntityTextById(int id, String text)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
+		KrollDict properties= new KrollDict();
+		if(glEntity instanceof GLText)
+		{
+			((GLText)glEntity).setText(text);
+			properties.put("width", glEntity.width);
+			properties.put("height", glEntity.height);
+		}
+		return properties;
+	}
+
+	@Kroll.method
+	public void setEntityColorById(int id, int color)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
+		if(glEntity instanceof GLText)
+		{
+			((GLText)glEntity).color = color;
+		}
+	}
+
+	
+	
+	@Kroll.method
+	public void setEntityOutlineColorById(int id, int color)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
+		if(glEntity instanceof GLText)
+		{
+			((GLText)glEntity).outlineColor = color;
+		}
+	}
+
 	@Kroll.method
 	public void setTouchEnabledById(int id, boolean touchEnabled)
 	{
@@ -338,27 +430,6 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		glSprite.playAnimation(options);
 	}
 
-
-
-	@Kroll.method
-	public void setEntityPos(int index, float x, float y, float r, float sx, float sy, float px, float py)
-	{
-	
-
-			GLEntity glEntity =  this.tiglView.getScene().getChildAt(index);
-			if(glEntity == null)
-			{
-				return;
-			}
-			glEntity.x = x;
-			glEntity.y = y;
-			glEntity.r = r;
-			glEntity.sx = sx;
-			glEntity.sy = sy;
-			glEntity.px = px;
-			glEntity.py = py;
-		
-	}
 
 
 	/*
@@ -414,8 +485,49 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		}
 	}
 
+	
+	/*
+	 * Receive packets of text and add it to tiglManagerPackets
+	 *  => datas will be processed on the beginning of the next loop
+	 */
+    // @Kroll.method
+	// public void setEntitiesTextsPacked(Object[] datas)
+	// {
+	// 	synchronized(this.tiglManagerPackets)
+	// 	{
+	// 		this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.TEXTS_PACKED, datas));		
+	// 	}
+	// }
+
+	/*
+	 * Receive packets of colors and add it to tiglManagerPackets
+	 *  => datas will be processed on the beginning of the next loop
+	 */
+    @Kroll.method
+	public void setEntitiesColorsPacked(long[] datas)
+	{
+		synchronized(this.tiglManagerPackets)
+		{
+			this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.COLORS_PACKED, datas));		
+		}
+	}
 
 
+	/*
+	 * Receive packets of outline colors and add it to tiglManagerPackets
+	 *  => datas will be processed on the beginning of the next loop
+	 */
+    @Kroll.method
+	public void setEntitiesOutlineColorsPacked(long[] datas)
+	{
+		synchronized(this.tiglManagerPackets)
+		{
+			this.tiglManagerPackets.add(new TiglManagerPacket(TiglManagerPacket.OUTLINE_COLORS_PACKED, datas));		
+		}
+	}
+
+
+/*
 	@Kroll.method
 	public KrollDict[] getFullScene()
 	{
@@ -430,17 +542,17 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		}
 		return k;
 	}
-
+*/
 	
 
-
+/*
 	@Kroll.method
 	public int testPerf(int test)
 	{
 		return test+1;
 	}
 
-	
+	*/
 
 	@Kroll.method
 	public GLScene getScene()
@@ -450,11 +562,49 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 
 	
 	@Kroll.method
+	public void setSceneScale(float sx, float sy)
+	{
+		GLScene glScene =  this.tiglView.getScene();
+		glScene.sx = sx;
+		glScene.sy = sy;
+	}
+
+	
+	@Kroll.method
 	public int addSprite(KrollDict options)
 	{
 			GLSprite sprite = new GLSprite(options);
 			this.tiglView.getScene().add(sprite);
 			return sprite.id;
+	}
+
+	
+	@Kroll.method
+	public int addText(KrollDict options)
+	{
+			GLText text = new GLText(options);
+			this.tiglView.getScene().add(text);
+			return text.id;
+	}
+
+	
+	@Kroll.method
+	public KrollDict getEntitySizeById(int id)
+	{
+		GLEntity glEntity =  this.tiglView.getScene().getEntityById(id);
+		KrollDict properties= new KrollDict();
+		properties.put("width", glEntity.width);
+		properties.put("height", glEntity.height);
+		return properties;
+	}
+
+	@Kroll.method
+	public void setEntityParentById(int id, int idParent)
+	{
+		GLScene glScene = this.tiglView.getScene();
+		GLEntity glEntity = glScene.getEntityById(id);
+		GLEntity glEntityParent = glScene.getEntityById(idParent);
+		glEntityParent.add(glEntity);
 	}
 
 /*
@@ -475,12 +625,13 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 
 
 
-
+/*
 	@Kroll.method
 	public void updateBulkModeXY(int[] datas, boolean packetFull)
 	{
 		this.tiglView.getScene().updateBulkModeXY(datas, packetFull);
 	}
+	*/
 
 	@Kroll.setProperty @Kroll.method
 	public void setBackgroundcolor(String color)
@@ -530,10 +681,5 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	}
 
 
-	@Kroll.setProperty @Kroll.method
-	public void setMessage(String message)
-	{
-	    Log.i("TIGL", "ExampleProxy.setMessage(" + message + ")");
-	}
 
 }

@@ -23,7 +23,7 @@ import org.appcelerator.kroll.KrollModule;
 import org.appcelerator.kroll.annotations.Kroll;
 
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import org.appcelerator.kroll.common.TiConfig;
 
 
@@ -48,8 +48,21 @@ public class TiglModule extends KrollModule
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
-		Log.i("GLSprite", "GlspriteModule.onAppCreate(TiApplication)");
+		Log.i("TIGL", "GlspriteModule.onAppCreate(TiApplication)");
 		// put module init code that needs to run when the application is created
+		
+        BitmapCache.setContext(app);
+        BitmapFont.setContext(app);
+		/*
+		try
+		{
+			BitmapFont.load("Resources/Kalam.fnt");
+		}
+		catch(Exception e)
+		{
+			Log.e("TIGL", e.getMessage());
+			e.printStackTrace();
+		}*/
 	}
 
 	// Methods

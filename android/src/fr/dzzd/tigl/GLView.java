@@ -20,7 +20,7 @@ package fr.dzzd.tigl;
 
 import java.text.DecimalFormat;
 import android.util.DisplayMetrics;
-import org.appcelerator.titanium.TiApplication;
+import android.content.Context;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.View.OnFocusChangeListener;
@@ -40,11 +40,8 @@ import java.util.Map.Entry;
 
 public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLViewListener
 {
-    /*
-     * IMPORTANT WARNING
-     * If any attribute is accessed from JavaScript this will make the whole system laggy
-     * To avoid this, all attributes are set as private
-     */
+    public static Context context;
+
     private GLScene scene;
 
     private int totalFrameCount = 0;
@@ -73,9 +70,9 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
     private int screenDpi;
 
     
-    public GLView() 
+    public GLView(Context context) 
     {
-        super(TiApplication.getAppCurrentActivity());
+        super(context);
         Log.i("GLSprite", "GLView() Thread ==> " + Thread.currentThread());
         this.setBackgroundColor("#FFFFFF");
         this.setEGLContextClientVersion(2);
@@ -135,6 +132,7 @@ public class GLView extends GLSurfaceView implements GLSurfaceView.Renderer, GLV
        return (int)this.fps;
     }
 
+    @SuppressWarnings("all")
     public void setBackgroundColor(String color)
     {
         this.backgroundColor = Color.parseColor(color);

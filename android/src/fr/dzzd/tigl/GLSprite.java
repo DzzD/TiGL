@@ -21,7 +21,7 @@ package fr.dzzd.tigl;
 
 import android.graphics.Bitmap;
 import java.util.HashMap;
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import android.graphics.Matrix;
 import java.util.*;
 import java.nio.*;
@@ -54,7 +54,7 @@ public class GLSprite extends GLEntity
     private int textureHeight;
 
     /*
-    * Part of this bitmap used for this sprite
+    * Area of this bitmap used as texture for this sprite (sub texture)'
     *  => using the same texture for multiple sprites can 
     *     geatly improve performance via batch rendering
     */
@@ -82,7 +82,7 @@ public class GLSprite extends GLEntity
 
   
     /*
-    * Construct a new SpriteBitmap using the specified image file
+    * Construct a new Sprite
     */
     public GLSprite(HashMap<String,Object> options)
     {
@@ -267,14 +267,15 @@ public class GLSprite extends GLEntity
     
 
     /*
-     * Return an unique identifier for this sprite material/draw
+     * Return an unique identifier for this entity material/draw
      *  could be a combinaison of texture, opacity, effects, layer number, etc...
      * This identifier is used to know wich entities/sprite can be drawn together
      */
     @Override
-    public int getMaterialUid()
+    public Integer getMaterialUid()
     {
-        return Integer.valueOf(this.textureHandle);
+        int uid = super.getMaterialUid();
+        return Integer.valueOf(uid | (this.textureHandle<<16));
     }
 
     public void setAnimationFrame(int animationFrame)

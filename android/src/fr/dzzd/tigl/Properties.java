@@ -19,6 +19,9 @@
 package fr.dzzd.tigl;
 
 
+import android.graphics.Color;
+import android.util.Log;
+
 public class Properties
 {
     
@@ -91,6 +94,43 @@ public class Properties
 
     }
 
+    
+    public static int propertyToColor(Object obj)
+    {
+      
+        if(obj == null)
+        {
+            return 0x88888888;
+        }
+
+        if(obj instanceof Integer)
+        {
+            return (Integer)obj;
+        }
+        
+        if(obj instanceof Long)
+        {
+            return (Integer)obj;
+        }
+        
+        if(obj instanceof Double)
+        {
+            return (int)((Double)obj).longValue();
+        }
+
+        if(obj instanceof Float)
+        {
+            return ((Float)obj).intValue();
+        }
+
+        if(obj instanceof String)
+        {
+            return Color.parseColor((String)obj);
+        }
+
+        return 0x88888888;
+
+    }
     
     public static boolean propertyToBoolean(Object obj)
     {

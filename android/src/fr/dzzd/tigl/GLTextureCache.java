@@ -19,7 +19,7 @@
 package fr.dzzd.tigl;
 
 
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import java.util.HashMap;
 import android.graphics.Bitmap;
 import android.opengl.GLES20;

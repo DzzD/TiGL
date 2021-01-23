@@ -21,7 +21,7 @@ package fr.dzzd.tigl;
 import android.view.ViewGroup;
 import android.view.View;
 import org.appcelerator.titanium.TiApplication;
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import org.appcelerator.titanium.view.TiUIView;
 
 public class TIGLView extends TiUIView //implements GLViewListener
@@ -35,7 +35,7 @@ public class TIGLView extends TiUIView //implements GLViewListener
         this.proxy = proxy;
 		this.getLayoutParams().autoFillsHeight = true;
 		this.getLayoutParams().autoFillsWidth = true;
-        this.glView = new GLView();
+        this.glView = new GLView(TiApplication.getAppCurrentActivity());
         this.glView.setBackgroundColor(proxy.getBackgroundcolor());
         this.glView.setUnits(proxy.getUnits());
         this.setNativeView(this.glView);

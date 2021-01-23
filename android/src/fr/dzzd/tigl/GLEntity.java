@@ -20,7 +20,7 @@ package fr.dzzd.tigl;
 
 
 import android.graphics.Matrix;
-import org.appcelerator.kroll.common.Log;
+import android.util.Log;
 import java.util.*;
 import org.appcelerator.kroll.KrollDict;
 
@@ -31,6 +31,7 @@ public class GLEntity
     public final static int GL_ENTITY = 0;
     public final static int GL_SCENE = 1;
     public final static int GL_SPRITE = 2;
+    public final static int GL_TEXT = 3;
     
     /*
      * Unique identifier for this entity
@@ -46,8 +47,8 @@ public class GLEntity
      * Helper matrices used to convert from Android matrix
      *   USED INTERNALLY, MUST NOT BE MODIFIED DIRECTLY
      */
-    public float[] matrix4x4 = new float[16];
-    public float[] matrix3x3 = new float[16];
+    // public float[] matrix4x4 = new float[16];
+    // public float[] matrix3x3 = new float[16];
 
     /*
      * Position in parent space
@@ -168,9 +169,9 @@ public class GLEntity
      *  could be a combinaison of texture, opacity, effects, etc...
      * This identifier is used to know wich entities/sprite can be draw together
      */
-    public int getMaterialUid()
+    public Integer getMaterialUid()
     {
-        return Integer.valueOf(-1); //No material
+        return Integer.valueOf(this.type | (this.layer << 8));
     }
 
     /*
@@ -189,13 +190,9 @@ public class GLEntity
      */
     public synchronized void remove(GLEntity glEntity)
     {
+        glEntity._removeFromScene();
         this.childs.remove(glEntity);
         glEntity.parent = null;
-        HashMap<Integer,GLEntity> entities = this.getScene().getEntities();
-        synchronized(entities)
-        {
-            entities.remove(glEntity.id);
-        }
     }
 
     public synchronized void remove()
@@ -210,16 +207,56 @@ public class GLEntity
     /*
      * Adds a new child
      *  This also add it to the scene entities (as well as its childrens)
-     * @todo : process child entities !!
+     * @todo : process childs entities !!
      */
     public synchronized void add(GLEntity glEntity)
     {
+        glEntity.remove();
         glEntity.parent = this;
         this.childs.add(glEntity);
-        HashMap<Integer,GLEntity> entities = this.getScene().getEntities();
-        synchronized(entities)
+        glEntity._addToScene();
+    }
+
+    
+    protected void _removeFromScene()
+    {
+        GLScene glScene = this.getScene();
+        if(glScene == null)
         {
-            entities.put(glEntity.id, glEntity);
+            return;
+        }
+
+        Iterator<GLEntity> childIterator = this.childs.iterator();
+        while (childIterator.hasNext()) 
+        {
+            (childIterator.next())._removeFromScene();
+        }
+
+        HashMap<Integer,GLEntity> sceneEntities = this.getScene().getEntities();
+        synchronized(sceneEntities)
+        {
+            sceneEntities.remove(this.id);
+        }
+    }
+
+    protected void _addToScene()
+    {
+        GLScene glScene = this.getScene();
+        if(glScene == null)
+        {
+            return;
+        }
+        
+        Iterator<GLEntity> childIterator = this.childs.iterator();
+        while (childIterator.hasNext()) 
+        {
+            (childIterator.next())._addToScene();
+        }
+
+        HashMap<Integer,GLEntity> sceneEntities = this.getScene().getEntities();
+        synchronized(sceneEntities)
+        {
+            sceneEntities.put(this.id, this);
         }
     }
 
@@ -235,6 +272,7 @@ public class GLEntity
     /*
      * Gets children at Nth pos
      * */
+     /*
     public synchronized GLEntity getChildAt(int n)
     {
         if(n < 0 || n >= this.childs.size())
@@ -243,20 +281,21 @@ public class GLEntity
         }
         return this.childs.get(n);
     }
-	
+	*/
 	/*
 	* Sets sprite position
 	*/
+    /*
 	public void setPos(float x, float y)
 	{
 		this.x = x;
 		this.y = y;
     }
-    
+    */
 	
 
 
-    
+    /*
 	public void updateBulkModeXY(int[] datas, boolean fullUpdate)
 	{
         if(fullUpdate)
@@ -285,7 +324,7 @@ public class GLEntity
 	public void updateBulkModeXYString(String datas)
 	{
     }
-
+*/
 
     
 
@@ -293,12 +332,13 @@ public class GLEntity
     /*
      * Gets childrens 
      */
+     /*
     public GLEntity[] getChildrensAsArray()
     {
         
         /*
          * Put all childrens in an array
-         */
+         *
         Object[] objArray = this.childs.toArray(); 
         GLEntity[] glEntities = Arrays.copyOf(objArray, 
                                        objArray.length, 
@@ -306,7 +346,7 @@ public class GLEntity
 
         return glEntities;
     }
-
+*/
     
     /* 
      * Update the current matrix using GLEntity properties and its parent's matrix
@@ -343,6 +383,7 @@ public class GLEntity
 
     }
 
+/*
     public void getProperties(Vector<KrollDict> v)
     {
         KrollDict props = new KrollDict();
@@ -360,7 +401,7 @@ public class GLEntity
             (childIterator.next()).getProperties(v);
         }
     }
-
+*/
     public synchronized int getChildrenCount()
     {
         int count = this.childs.size();
@@ -380,6 +421,10 @@ public class GLEntity
         {
             return (GLScene)this;
         }
+        if(this.parent == null)
+        {
+            return null;
+        }
         return this.parent.getScene();
     }
 
@@ -391,7 +436,6 @@ public class GLEntity
      *
      *  This method is called within the GLThread with an active context.
      *  GLES20 functions are available for drawing and can be called within this method. 
-     *  Drawing must be done in object space as the transformation Matrix is already applied.
      */
     public void drawSingle()
     {
@@ -400,7 +444,7 @@ public class GLEntity
     
 
     /*
-     * Draw a list of GLEntity on the GLView.
+     * Draw a list of GLEntity in a single pass on the GLView.
      *
      *  If this class is not overrided it will call drawSingle for each entry of the given list
      *  For performance reason it is good to implement it in all subclass
@@ -410,7 +454,7 @@ public class GLEntity
     public synchronized void drawBatch(ArrayList<GLEntity> entities)
     {
         //for (Enumeration<GLEntity> e = entities.elements(); e.hasMoreElements();)
-        Iterator<GLEntity> childIterator = this.childs.iterator();
+        Iterator<GLEntity> childIterator = entities.iterator();
         while (childIterator.hasNext()) 
         {
             childIterator.next().drawSingle();

@@ -24,6 +24,9 @@ public class TiglManagerPacket
     public static final int ROTATIONS_PACKED = 2;
     public static final int SCALES_PACKED = 3;
     public static final int PIVOTS_PACKED = 4;
+    public static final int TEXTS_PACKED = 5;
+    public static final int COLORS_PACKED = 6;
+    public static final int OUTLINE_COLORS_PACKED = 7;
 
     private int type;
     private Object datas;
