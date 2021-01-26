@@ -8,3 +8,4 @@
 /android/.settings/org.eclipse.buildship.core.prefs
 /android/src/fr/dzzd/glsprite/GLEntityProps.java
 /buildAndDeployDevice.bat
+/deploy.bat
