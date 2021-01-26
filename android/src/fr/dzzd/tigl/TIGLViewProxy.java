@@ -569,6 +569,14 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 		glScene.sy = sy;
 	}
 
+	@Kroll.method
+	public int addEntity(KrollDict options)
+	{
+			GLEntity entity = new GLEntity(options);
+			this.tiglView.getScene().add(entity);
+			return entity.id;
+	}
+
 	
 	@Kroll.method
 	public int addSprite(KrollDict options)
