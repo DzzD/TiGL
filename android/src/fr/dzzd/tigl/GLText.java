@@ -300,6 +300,7 @@ public class GLText extends GLEntity
 
             charStart += charCount;
         }
+        
         if(totalCharCount == 0)
         {
             return;

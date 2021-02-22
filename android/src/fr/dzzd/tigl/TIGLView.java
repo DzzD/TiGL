@@ -24,7 +24,7 @@ import org.appcelerator.titanium.TiApplication;
 import android.util.Log;
 import org.appcelerator.titanium.view.TiUIView;
 
-public class TIGLView extends TiUIView //implements GLViewListener
+public class TIGLView extends TiUIView 
 {
     private GLView glView;
     private TIGLViewProxy proxy;

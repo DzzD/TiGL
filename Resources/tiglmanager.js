@@ -223,6 +223,16 @@ class Sprite extends Entity
 }
 
 
+class Shape extends Entity
+{
+    constructor(options, tiglManager)
+    {
+        super(options, tiglManager);
+    }
+
+}
+
+
 class Text extends Entity
 {
     constructor(options, tiglManager)
@@ -312,6 +322,19 @@ class TIGLManager
     {
         let id = this.tiglView.addSprite(options);
         let entity = new Sprite(options, this);
+        entity.id = id;
+        let size = this.tiglView.getEntitySizeById(id);
+        entity._width = size.width;
+        entity._height = size.height;
+        this.entities.set(id, entity);
+        return entity;
+    }
+
+    
+    addShape(options)
+    {
+        let id = this.tiglView.addShape(options);
+        let entity = new Shape(options, this);
         entity.id = id;
         let size = this.tiglView.getEntitySizeById(id);
         entity._width = size.width;
@@ -616,6 +639,14 @@ try
         addSprite(options)
         {
            let entity = super.addSprite(options);
+           this._insertPhysics(entity, options.physics)
+           return entity;
+        }
+
+        
+        addShape(options)
+        {
+           let entity = super.addShape(options);
            this._insertPhysics(entity, options.physics)
            return entity;
         }

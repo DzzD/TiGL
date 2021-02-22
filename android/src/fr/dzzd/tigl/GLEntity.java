@@ -32,6 +32,7 @@ public class GLEntity
     public final static int GL_SCENE = 1;
     public final static int GL_SPRITE = 2;
     public final static int GL_TEXT = 3;
+    public final static int GL_SHAPE = 4;
     
     /*
      * Unique identifier for this entity
@@ -171,7 +172,7 @@ public class GLEntity
      */
     public Integer getMaterialUid()
     {
-        return Integer.valueOf(this.type | (this.layer << 8));
+        return Integer.valueOf(this.type | (this.layer << 4));
     }
 
     /*

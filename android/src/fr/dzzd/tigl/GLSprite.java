@@ -22,7 +22,6 @@ package fr.dzzd.tigl;
 import android.graphics.Bitmap;
 import java.util.HashMap;
 import android.util.Log;
-import android.graphics.Matrix;
 import java.util.*;
 import java.nio.*;
 
