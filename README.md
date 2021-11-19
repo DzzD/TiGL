@@ -8,6 +8,9 @@ See [TIGL Demo](https://github.com/DzzD/TIGLDemo) for help on how to use this li
 
 ### You are welcome to participate and help in this project development. (IOS developper to help in supporting IOS platform would be greatly apreciated)
 
+
+### Not that TiGL library can also be used as a standalone OpenGL library for Android project without Titanium
+
 Enjoy !
 
 
