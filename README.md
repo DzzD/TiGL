@@ -6,9 +6,6 @@ This module is designed to provide an easy way for integrating OpenGL within Tit
 
 See [https://github.com/DzzD/TIGLDemo][TiGL Demo]  for help on hos to use this library and to get started using it
 
-
-![TIGL Demo](flappybird.gif)
-
 You are welcome to participate and help in this project development. (IOS developper to help in supporting IOS platform would be greatly apreciated)
 
 Enjoy !
