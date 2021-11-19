@@ -1,27 +1,27 @@
-# glsprite Module
+# tigl Module
 
 ## Description
 
 TODO: Enter your module description here
 
-## Accessing the glsprite Module
+## Accessing the tigl Module
 
 To access this module from JavaScript, you would do the following:
 
-    var glsprite = require("fr.dzzd.glsprite");
+    var tigl = require("fr.dzzd.tigl");
 
-The glsprite variable is a reference to the Module object.
+The tigl variable is a reference to the Module object.
 
 ## Reference
 
 TODO: If your module has an API, you should document
 the reference here.
 
-### glsprite.function
+### tigl.function
 
 TODO: This is an example of a module function.
 
-### glsprite.property
+### tigl.property
 
 TODO: This is an example of a module property.
 
