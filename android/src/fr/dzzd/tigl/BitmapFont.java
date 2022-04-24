@@ -17,7 +17,7 @@
 */
 
 /*
- * BitmapFont is an implementation of fonts produced by BMFont tools, see https://www.angelcode.com/products/bmfont/ 
+ * BitmapFont is an implementation to decode, use and display fonts files produced by BMFont tools, see https://www.angelcode.com/products/bmfont/ 
  */
 
 package fr.dzzd.tigl;
