@@ -32,6 +32,7 @@ public class TIGLView extends TiUIView
     public TIGLView(TIGLViewProxy proxy)
     {
         super(proxy);
+        Log.i("TIGL", "TIGLView(TIGLViewProxy proxy) -- constructor");
         this.proxy = proxy;
 		this.getLayoutParams().autoFillsHeight = true;
 		this.getLayoutParams().autoFillsWidth = true;

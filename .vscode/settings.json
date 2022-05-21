@@ -1,7 +1,7 @@
 {
 	"files.exclude": {
 		".gitignore": true,
-		".vscode": true,
+		".vscode/": true,
 		"android/build.gradle": true,
 		"android/build/": true,
 		"android/dist": true,
@@ -28,7 +28,7 @@
 	},
 	"files.watcherExclude": {
 		".gitignore": true,
-		".vscode": true,
+		".vscode/": true,
 		"android/build.gradle": true,
 		"android/build/": true,
 		"android/dist": true,
@@ -37,5 +37,14 @@
 		"build.bat": true,
 		"deployDevice.bat": true
 	},
-	"java.configuration.updateBuildConfiguration": "disabled"
+    "java.project.sourcePaths": [
+		"android/src"
+	],
+	"java.autobuild.enabled": false,
+	"java.import.gradle.enabled": false,
+	"java.import.maven.enabled": false,
+	"java.server.launchMode": "LightWeight",
+    "java.project.referencedLibraries": [
+        "C:\\Adroid\\SDK\\platforms\\android-31\\android.jar"
+    ]
 }

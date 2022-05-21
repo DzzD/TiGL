@@ -43,12 +43,13 @@ public class TiglModule extends KrollModule
 	public TiglModule()
 	{
 		super();
+		Log.i("TIGL", "TiglModule() -- constructor");
 	}
 
 	@Kroll.onAppCreate
 	public static void onAppCreate(TiApplication app)
 	{
-		Log.i("TIGL", "GlspriteModule.onAppCreate(TiApplication)");
+		Log.i("TIGL", "TiglModule.onAppCreate(TiApplication)");
 		// put module init code that needs to run when the application is created
 		
         BitmapCache.setContext(app);
@@ -69,7 +70,7 @@ public class TiglModule extends KrollModule
 	@Kroll.method
 	public String example()
 	{
-		Log.i("GLSprite", "GlspriteModule.example()");
+		Log.i("TIGL", "TiglModule.example()");
 		return "hello world";
 	}
 
@@ -78,7 +79,7 @@ public class TiglModule extends KrollModule
 	@Kroll.getProperty
 	public String getExampleProp()
 	{
-		Log.i("GLSprite", "GlspriteModule.getExampleProp()");
+		Log.i("TIGL", "TiglModule.getExampleProp()");
 		return "hello world";
 	}
 
@@ -87,7 +88,7 @@ public class TiglModule extends KrollModule
 	@Kroll.setProperty
 	public void setExampleProp(String value)
 	{
-		Log.i("GLSprite", "GlspriteModule.setExampleProp(" + value + ")");
+		Log.i("TIGL", "TiglModule.setExampleProp(" + value + ")");
 	}
 
 }

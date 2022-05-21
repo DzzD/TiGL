@@ -62,10 +62,17 @@ public class TIGLViewProxy extends TiViewProxy implements GLViewListener
 	private LinkedList<TiglManagerPacket> tiglManagerPackets = new LinkedList<TiglManagerPacket>();
 
 
+	public TIGLViewProxy()
+	{
+		super();
+		Log.i("TIGL", "TiViewProxy() -- constructor");
+
+	}
+
 	@Override
 	public TiUIView createView(Activity activity)
 	{
-		Log.i("GLSprite", "GLViewProxy.createView(activity)");
+		Log.i("TIGL", "TIGLViewProxy.createView(activity)");
 		this.tiglView = new TIGLView(this);
 		return this.tiglView;
 	}
